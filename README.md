@@ -28,3 +28,9 @@ Publicar `firestore.rules` no Firebase Console, cadastrar o primeiro administrad
 - O menu da conta mostra `Painel administrativo` somente quando `admins/{uid}.enabled == true`.
 - Usuários comuns nunca recebem o item ADM no menu.
 - O painel `/admin/` valida novamente a permissão antes de carregar dados.
+
+## Projetos
+- A visibilidade pública é controlada pelo ADM.
+- Cada projeto pode usar de 1 até 3 categorias: Programa, Aplicativo e Site.
+- Os filtros da página `/projetos/` usam as categorias configuradas no painel administrativo.
+- Um projeto pode aparecer em mais de um filtro ao mesmo tempo.
