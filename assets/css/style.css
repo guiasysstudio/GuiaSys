@@ -83,3 +83,5 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:70p
 [data-project-slug][hidden]{display:none!important}
 @media(max-width:850px){.admin-layout{grid-template-columns:1fr}.admin-sidebar{position:static;min-height:auto;display:grid;grid-template-columns:1fr 1fr}.admin-sidebar-head{grid-column:1/-1}.admin-nav-bottom{margin-top:0}.admin-panel{padding:20px}.admin-title-row{flex-direction:column}.admin-stat{min-width:120px}}
 @media(max-width:560px){.admin-sidebar{grid-template-columns:1fr}.admin-sidebar-head{grid-column:auto}.admin-detail-actions .btn{width:100%}}
+
+.project-gated:not(.project-access-ready) main,.project-gated:not(.project-access-ready) footer{visibility:hidden}
