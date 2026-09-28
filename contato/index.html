@@ -1,46 +1,44 @@
 <!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Contato — GuiaSys Studio</title><meta name="description" content="Entre em contato com a GuiaSys Studio.">
-<link id="site-favicon" rel="icon" href="/assets/img/favicon-light.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/css/style.css">
-<meta name="theme-color" content="#019A98">
-</head><body><header class="site-header">
-  <div class="container navbar">
-    <a class="brand" href="/" aria-label="GuiaSys Studio - Início">
-      <img data-theme-logo data-src-light="/assets/img/logo-gs-light.svg" data-src-dark="/assets/img/logo-gs-dark.svg" src="/assets/img/logo-gs-light.svg" alt=""><span>GUIA<em>SYS</em> <small>STUDIO</small></span>
-    </a>
-    <nav class="nav-links" aria-label="Navegação principal">
-      <a  href="/">Início</a>
-      <a  href="/projetos/">Projetos</a>
-      <a  href="/sobre/">Sobre</a>
-      <a class="active" href="/contato/">Contato</a>
-    </nav>
-    <div class="nav-actions">
-      <button class="icon-btn" data-theme-toggle aria-label="Alternar tema">◐</button>
-      <a class="icon-btn" href="/projetos/" aria-label="Favoritos">♡</a>
-      <a class="account-btn" data-account-link href="/login/" title="Entrar na conta GuiaSys">Entrar</a>
-      <button class="icon-btn menu-btn" data-menu-toggle aria-expanded="false" aria-label="Abrir menu">☰</button>
-    </div>
-  </div>
-</header><main>
-<section class="page-hero"><div class="container"><span class="eyebrow">Contato</span><h1>Fale com a GuiaSys</h1><p>Use esta página para falar sobre um projeto, suporte, compra ou outra solicitação.</p></div></section>
-<section class="section"><div class="container contact-grid">
-<div class="contact-card"><h2>Contato direto</h2><p>Envie sua mensagem pelo formulário ou fale diretamente com a GuiaSys pelo WhatsApp.</p><div class="contact-channel"><strong>WhatsApp</strong><span>(69) 99308-2084</span><a class="btn btn-whatsapp" href="https://wa.me/5569993082084?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20GuiaSys%20Studio." target="_blank" rel="noopener">Abrir WhatsApp</a></div><div class="notice">As mensagens enviadas pelo formulário continuam sendo recebidas no painel administrativo da GuiaSys.</div></div>
-<form class="form-card" id="contact-form"><div class="form-grid">
+<title>Contato — GuiaSys Studio</title>
+<meta name="description" content="Fale com a GuiaSys Studio sobre projetos, suporte, dúvidas e solicitações.">
+<link rel="canonical" href="https://www.guiasys.online/contato/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="GuiaSys Studio"><meta property="og:title" content="Contato — GuiaSys Studio"><meta property="og:description" content="Fale com a GuiaSys sobre projetos, suporte e dúvidas."><meta property="og:url" content="https://www.guiasys.online/contato/">
+<link id="site-favicon" rel="icon" href="/assets/img/favicon-light.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/css/style.css"><meta name="theme-color" content="#019A98">
+</head><body>
+<header class="site-header"><div class="container navbar">
+<a class="brand" href="/"><img data-theme-logo data-src-light="/assets/img/logo-gs-light.svg" data-src-dark="/assets/img/logo-gs-dark.svg" src="/assets/img/logo-gs-light.svg" alt=""><span>GUIA<em>SYS</em> <small>STUDIO</small></span></a>
+<nav class="nav-links"><a href="/">Início</a><a href="/projetos/">Projetos</a><a href="/sobre/">Sobre</a><a class="active" href="/contato/">Contato</a></nav>
+<div class="nav-actions"><button class="icon-btn" data-theme-toggle aria-label="Alternar tema">◐</button><a class="account-btn" data-account-link href="/login/">Entrar</a><button class="icon-btn menu-btn" data-menu-toggle aria-label="Abrir menu">☰</button></div>
+</div></header>
+
+<main>
+<section class="page-hero"><div class="container" data-reveal><span class="eyebrow">Contato</span><h1>Fale com a GuiaSys</h1><p>Use o canal que fizer mais sentido. O formulário entra diretamente no atendimento administrativo; o WhatsApp abre uma conversa direta.</p></div></section>
+
+<section class="section"><div class="container contact-grid contact-grid-v2">
+<div class="contact-stack">
+<div class="contact-card" data-reveal><span class="eyebrow">WhatsApp</span><h2>Contato direto</h2><p>Para uma conversa rápida, fale diretamente pelo número oficial.</p><div class="contact-channel"><strong>(69) 99308-2084</strong><span>WhatsApp GuiaSys Studio</span><a class="btn btn-whatsapp" href="https://wa.me/5569993082084?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20GuiaSys%20Studio." target="_blank" rel="noopener">Abrir WhatsApp</a></div></div>
+<div class="contact-card" data-reveal><span class="eyebrow">Novo projeto</span><h2>Tem uma ideia ou necessidade?</h2><p>Existe uma página própria para enviar um briefing inicial com objetivo, tipo de solução e contexto.</p><a class="btn btn-secondary" href="/solicitar-projeto/">Solicitar projeto</a></div>
+<div class="notice" data-reveal>Projetos ocultos no painel administrativo não aparecem na lista de assuntos do formulário.</div>
+</div>
+
+<form class="form-card" id="contact-form" data-reveal><div class="form-grid">
 <div class="field"><label for="name">Nome</label><input id="name" required autocomplete="name"></div>
 <div class="field"><label for="email">E-mail</label><input id="email" type="email" required autocomplete="email"></div>
 <div class="field full"><label for="project">Assunto</label><select id="project"><option value="geral">Contato geral</option></select></div>
-<div class="field full"><label for="message">Mensagem</label><textarea id="message" rows="6" required></textarea></div>
+<div class="field full"><label for="message">Mensagem</label><textarea id="message" rows="8" minlength="10" required placeholder="Conte como podemos ajudar."></textarea></div>
 <div class="field full"><div id="contact-message" class="auth-message" aria-live="polite"></div><button class="btn btn-primary" type="submit">Enviar mensagem</button></div>
-</div></form></div></section></main><footer>
-  <div class="container footer-grid">
-    <div>
-      <a class="brand" href="/"><img data-theme-logo data-src-light="/assets/img/logo-gs-light.svg" data-src-dark="/assets/img/logo-gs-dark.svg" src="/assets/img/logo-gs-light.svg" alt=""><span>GUIA<em>SYS</em> <small>STUDIO</small></span></a>
-      <p>Softwares, aplicativos e projetos digitais reunidos em um só lugar.</p>
-    </div>
-    <div><h4>Navegação</h4><a href="/projetos/">Projetos</a><a href="/sobre/">Sobre</a><a href="/contato/">Contato</a></div>
-    <div><h4>Conta</h4><a href="/conta/">Minha conta</a><a href="/login/">Entrar</a><a href="/cadastro/">Criar conta</a></div>
-  </div>
-  <div class="container footer-bottom">© <span data-year></span> GuiaSys Studio. Todos os direitos reservados.</div>
-</footer><script src="/assets/js/main.js"></script><script type="module" src="/assets/js/auth-state.js"></script><script type="module" src="/assets/js/contact.js"></script></body></html>
+</div></form>
+</div></section>
+
+<section class="section alt"><div class="container"><div class="feature-grid">
+<div class="feature" data-reveal><strong>Projeto específico</strong><p>Quando a mensagem vem da página de um projeto público, o assunto é selecionado automaticamente.</p></div>
+<div class="feature" data-reveal><strong>Atendimento centralizado</strong><p>As mensagens do formulário ficam organizadas no painel administrativo da GuiaSys.</p></div>
+<div class="feature" data-reveal><strong>Contato direto</strong><p>O WhatsApp continua disponível quando uma conversa imediata for mais adequada.</p></div>
+</div></div></section>
+</main>
+
+<footer><div class="container footer-grid"><div><a class="brand" href="/"><img data-theme-logo data-src-light="/assets/img/logo-gs-light.svg" data-src-dark="/assets/img/logo-gs-dark.svg" src="/assets/img/logo-gs-light.svg" alt=""><span>GUIA<em>SYS</em> <small>STUDIO</small></span></a><p>Programas, web e soluções digitais construídas para necessidades reais.</p></div><div><h4>GuiaSys</h4><a href="/projetos/">Projetos</a><a href="/sobre/">Sobre</a><a href="/faq/">FAQ</a></div><div><h4>Contato</h4><a href="/solicitar-projeto/">Solicitar projeto</a><a href="/novidades/">Novidades</a></div></div><div class="container footer-bottom">© <span data-year></span> GuiaSys Studio. Todos os direitos reservados.</div></footer>
+<script src="/assets/js/main.js?v=20260928-b1"></script><script type="module" src="/assets/js/auth-state.js"></script><script type="module" src="/assets/js/contact.js?v=20260928-b1"></script>
+</body></html>
