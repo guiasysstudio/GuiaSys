@@ -5,6 +5,7 @@ import {
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { auth } from "./firebase-app.js";
+import { routeAfterAuthentication, safeNextPath } from "./profile-service.js";
 
 const form = document.querySelector("#login-form");
 const email = document.querySelector("#email");
@@ -12,6 +13,7 @@ const password = document.querySelector("#password");
 const googleButton = document.querySelector("#google-login");
 const resetButton = document.querySelector("#reset-password");
 const message = document.querySelector("#auth-message");
+const requestedNext = safeNextPath(new URLSearchParams(window.location.search).get("next"), "/conta/");
 
 const show = (text, type = "") => {
   message.textContent = text;
@@ -32,8 +34,8 @@ form?.addEventListener("submit", async (event) => {
   event.preventDefault();
   show("Entrando...");
   try {
-    await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
-    window.location.href = "/conta/";
+    const credential = await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
+    await routeAfterAuthentication(credential.user, requestedNext);
   } catch (error) {
     show(friendlyError(error), "error");
   }
@@ -42,8 +44,8 @@ form?.addEventListener("submit", async (event) => {
 googleButton?.addEventListener("click", async () => {
   show("Abrindo login do Google...");
   try {
-    await signInWithPopup(auth, new GoogleAuthProvider());
-    window.location.href = "/conta/";
+    const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+    await routeAfterAuthentication(credential.user, requestedNext);
   } catch (error) {
     show(friendlyError(error), "error");
   }
