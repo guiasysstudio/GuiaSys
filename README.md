@@ -23,3 +23,8 @@ Site público da GuiaSys Studio.
 
 ## Próximas etapas
 Publicar `firestore.rules` no Firebase Console, cadastrar o primeiro administrador em `admins/{UID}` e validar mensagens/visibilidade de projetos. Depois: favoritos, carrinho, compras, licenças e PagBank.
+
+## Administração
+- O menu da conta mostra `Painel administrativo` somente quando `admins/{uid}.enabled == true`.
+- Usuários comuns nunca recebem o item ADM no menu.
+- O painel `/admin/` valida novamente a permissão antes de carregar dados.
