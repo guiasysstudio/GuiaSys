@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Administração — GuiaSys Studio</title>
+<meta name="description" content="Painel administrativo da GuiaSys Studio.">
+<link id="site-favicon" rel="icon" href="/assets/img/favicon-light.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta name="theme-color" content="#019A98">
+</head>
+<body>
+<header class="site-header">
+  <div class="container navbar">
+    <a class="brand" href="/" aria-label="GuiaSys Studio - Início">
+      <img data-theme-logo data-src-light="/assets/img/logo-gs-light.svg" data-src-dark="/assets/img/logo-gs-dark.svg" src="/assets/img/logo-gs-light.svg" alt="">
+      <span>GUIA<em>SYS</em> <small>ADM</small></span>
+    </a>
+    <div class="nav-actions" style="margin-left:auto">
+      <button class="icon-btn" data-theme-toggle aria-label="Alternar tema">◐</button>
+      <a class="btn btn-secondary" href="/">Ver site</a>
+    </div>
+  </div>
+</header>
+
+<main class="admin-shell">
+  <div class="container">
+    <div id="admin-loading" class="notice">Verificando acesso administrativo...</div>
+
+    <section id="admin-denied" class="admin-denied" hidden>
+      <span class="eyebrow">Acesso restrito</span>
+      <h1>Conta sem permissão administrativa</h1>
+      <p>Esta conta está autenticada, mas não está cadastrada como administradora da GuiaSys.</p>
+      <a class="btn btn-secondary" href="/">Voltar ao site</a>
+    </section>
+
+    <div id="admin-app" class="admin-layout" hidden>
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-head">
+          <span class="eyebrow">Painel ADM</span>
+          <strong id="admin-email"></strong>
+        </div>
+        <button class="admin-nav active" type="button" data-admin-tab="messages">
+          <span>Mensagens</span><b id="new-count">0</b>
+        </button>
+        <button class="admin-nav" type="button" data-admin-tab="projects">
+          <span>Projetos</span><b id="visible-count">0</b>
+        </button>
+        <button class="admin-nav admin-nav-bottom" id="admin-logout" type="button">Sair</button>
+      </aside>
+
+      <section class="admin-content">
+        <div class="admin-panel" data-admin-panel="messages">
+          <div class="admin-title-row">
+            <div><span class="eyebrow">Atendimento</span><h1>Mensagens</h1><p>Mensagens recebidas pelo formulário de contato e pelas páginas dos projetos.</p></div>
+            <div class="admin-stat"><span>Total</span><strong id="message-count">0</strong></div>
+          </div>
+
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Cliente</th><th>Projeto</th><th>Status</th><th>Data</th><th></th></tr></thead>
+              <tbody id="messages-body"><tr><td colspan="5">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+
+          <aside id="message-detail" class="admin-detail" hidden></aside>
+        </div>
+
+        <div class="admin-panel" data-admin-panel="projects" hidden>
+          <div class="admin-title-row">
+            <div><span class="eyebrow">Publicação</span><h1>Projetos</h1><p>O projeto pode existir no site e continuar oculto até você decidir publicá-lo.</p></div>
+          </div>
+
+          <div class="notice admin-info">
+            Projetos novos entram como <strong>ocultos</strong>. Ative “Visível” somente quando a página estiver pronta para o público.
+          </div>
+
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Projeto</th><th>Identificador</th><th>Visível</th><th>Página</th></tr></thead>
+              <tbody id="projects-body"><tr><td colspan="4">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script src="/assets/js/main.js"></script>
+<script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>
