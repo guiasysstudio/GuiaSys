@@ -19,6 +19,7 @@ Site público da GuiaSys Studio.
 - `/cadastro/` — Cadastro
 - `/conta/` — Área autenticada
 - `/conta/perfil/` — Perfil completo do cliente
+- `/admin/` — Painel administrativo (mensagens e visibilidade de projetos)
 
 ## Próximas etapas
-Publicar `firestore.rules` no Firebase Console e validar cadastro completo. Depois: favoritos, carrinho, compras, licenças e PagBank.
+Publicar `firestore.rules` no Firebase Console, cadastrar o primeiro administrador em `admins/{UID}` e validar mensagens/visibilidade de projetos. Depois: favoritos, carrinho, compras, licenças e PagBank.
