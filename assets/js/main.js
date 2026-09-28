@@ -66,14 +66,34 @@
   const y = document.querySelector('[data-year]');
   if (y) y.textContent = new Date().getFullYear();
 
-  document.querySelectorAll('[data-favorite]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      btn.classList.toggle('is-favorite');
-      btn.textContent = btn.classList.contains('is-favorite') ? '♥' : '♡';
-      btn.setAttribute(
-        'aria-label',
-        btn.classList.contains('is-favorite') ? 'Remover dos favoritos' : 'Adicionar aos favoritos'
-      );
-    });
-  });
+  // Recursos ainda não implementados não ficam expostos como botões fictícios.
+  document.querySelectorAll('[aria-label="Favoritos"], [data-favorite]').forEach(el => el.remove());
+
+  // Busca é funcional e pode ser acessada de qualquer página pública.
+  const navActions = document.querySelector('.nav-actions');
+  if (navActions && !navActions.querySelector('[data-search-link]')) {
+    const searchLink = document.createElement('a');
+    searchLink.className = 'icon-btn search-link';
+    searchLink.href = '/buscar/';
+    searchLink.setAttribute('data-search-link', '');
+    searchLink.setAttribute('aria-label', 'Buscar no site');
+    searchLink.setAttribute('title', 'Buscar');
+    searchLink.innerHTML = '<span aria-hidden="true">⌕</span>';
+    const theme = navActions.querySelector('[data-theme-toggle]');
+    navActions.insertBefore(searchLink, theme || navActions.firstChild);
+  }
+
+  const revealItems = document.querySelectorAll('[data-reveal]');
+  if ('IntersectionObserver' in window && revealItems.length) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12 });
+    revealItems.forEach(item => observer.observe(item));
+  } else {
+    revealItems.forEach(item => item.classList.add('is-visible'));
+  }
 })();
