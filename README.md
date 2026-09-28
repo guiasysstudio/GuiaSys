@@ -34,3 +34,16 @@ Publicar `firestore.rules` no Firebase Console, cadastrar o primeiro administrad
 - Cada projeto pode usar de 1 até 3 categorias: Programa, Aplicativo e Site.
 - Os filtros da página `/projetos/` usam as categorias configuradas no painel administrativo.
 - Um projeto pode aparecer em mais de um filtro ao mesmo tempo.
+
+
+## Bloco 1 — Aparência e conteúdo
+- Home 2.0 institucional sem catálogo de projetos na página inicial.
+- Sobre ampliado com áreas de atuação, processo e princípios.
+- Projetos 2.0 com filtros, cards aprimorados e páginas individuais em formato mini-site.
+- GuiaCopy e GuiaPlay com páginas detalhadas e FAQ próprio.
+- Contato redesenhado e WhatsApp mantido.
+- Novas páginas: FAQ, Novidades, Solicitar projeto e Busca.
+- Solicitação de projeto envia uma mensagem real para o atendimento administrativo.
+- Busca consulta somente projetos públicos.
+- SEO básico com canonical/Open Graph nas páginas principais e sitemap público revisado.
+- Elementos de Favoritos não funcionais foram retirados da interface até a implementação real.
