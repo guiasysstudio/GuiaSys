@@ -1,3 +1,4 @@
+// Admin UI schema v2: Projeto | Identificador | Categorias | Visível | Página
 import {
   onAuthStateChanged,
   signOut
