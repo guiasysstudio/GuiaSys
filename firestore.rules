@@ -11,6 +11,12 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.enabled == true;
+    }
+
     function validText(value, minSize, maxSize) {
       return value is string
         && value.size() >= minSize
@@ -79,6 +85,80 @@ service cloud.firestore {
         && request.resource.data.schemaVersion == 1;
     }
 
+    function validProject(projectId) {
+      return request.resource.data.keys().hasAll([
+          'slug',
+          'name',
+          'category',
+          'path',
+          'visible',
+          'featured',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'slug',
+          'name',
+          'category',
+          'path',
+          'visible',
+          'featured',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.slug == projectId
+        && validText(request.resource.data.name, 2, 120)
+        && validText(request.resource.data.category, 2, 80)
+        && validText(request.resource.data.path, 1, 180)
+        && request.resource.data.visible is bool
+        && request.resource.data.featured is bool;
+    }
+
+    function validNewMessage() {
+      return request.resource.data.keys().hasAll([
+          'name',
+          'email',
+          'projectSlug',
+          'projectName',
+          'message',
+          'status',
+          'source',
+          'userId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'email',
+          'projectSlug',
+          'projectName',
+          'message',
+          'status',
+          'source',
+          'userId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && validText(request.resource.data.name, 2, 120)
+        && validText(request.resource.data.email, 5, 180)
+        && request.resource.data.email.matches('^.+@.+\\..+$')
+        && validText(request.resource.data.projectSlug, 1, 80)
+        && validText(request.resource.data.projectName, 2, 120)
+        && validText(request.resource.data.message, 10, 5000)
+        && request.resource.data.status == 'new'
+        && request.resource.data.source in ['contact', 'project']
+        && request.resource.data.userId is string
+        && request.resource.data.userId.size() <= 128
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    match /admins/{adminId} {
+      allow get: if isOwner(adminId);
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false;
@@ -95,6 +175,35 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
 
       allow delete: if false;
+    }
+
+    match /projects/{projectId} {
+      allow get, list: if isAdmin() || resource.data.visible == true;
+
+      allow create: if isAdmin()
+        && validProject(projectId)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isAdmin()
+        && validProject(projectId)
+        && request.resource.data.slug == resource.data.slug
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if false;
+    }
+
+    match /contactMessages/{messageId} {
+      allow create: if validNewMessage();
+      allow read: if isAdmin();
+
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
+        && request.resource.data.status in ['new', 'read', 'archived']
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if isAdmin();
     }
 
     match /{document=**} {
