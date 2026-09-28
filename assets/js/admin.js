@@ -33,9 +33,48 @@ const panels = [...document.querySelectorAll("[data-admin-panel]")];
 const PROJECT_SEED = [
   { slug: "guiacopy", name: "GuiaCopy", category: "Programa", path: "/projetos/guiacopy/", visible: false, featured: true },
   { slug: "guiaplay", name: "GuiaPlay", category: "Programa", path: "/projetos/guiaplay/", visible: false, featured: true },
-  { slug: "guiasys-memora", name: "GuiaSys Memora", category: "Aplicativo / Projeto", path: "/projetos/guiasys-memora/", visible: false, featured: true },
-  { slug: "sai-do-casamento", name: "Sai do Casamento", category: "Site / Projeto", path: "/projetos/sai-do-casamento/", visible: false, featured: false }
+  { slug: "guiasys-memora", name: "GuiaSys Memora", category: "Aplicativo", path: "/projetos/guiasys-memora/", visible: false, featured: true },
+  { slug: "sai-do-casamento", name: "Sai do Casamento", category: "Site", path: "/projetos/sai-do-casamento/", visible: false, featured: false }
 ];
+
+const CATEGORY_OPTIONS = ["Programa", "Aplicativo", "Site"];
+
+const normalizeCategories = (value) => {
+  const text = String(value || "");
+  const found = CATEGORY_OPTIONS.filter(category =>
+    text.toLocaleLowerCase("pt-BR").includes(category.toLocaleLowerCase("pt-BR"))
+  );
+  return found.length ? found.slice(0, 3) : ["Programa"];
+};
+
+const categoryValue = (categories) => [...new Set(categories)]
+  .filter(category => CATEGORY_OPTIONS.includes(category))
+  .slice(0, 3)
+  .join(" | ");
+
+const categoryOptionsHtml = (selected) => CATEGORY_OPTIONS.map(category =>
+  `<option value="${category}" ${category === selected ? "selected" : ""}>${category}</option>`
+).join("");
+
+const renderCategoryEditor = (project) => {
+  const categories = normalizeCategories(project.category);
+  const controls = categories.map((category, index) => `
+    <div class="admin-category-row">
+      <select class="admin-category-select"
+              data-category-project="${escapeHtml(project.id)}"
+              data-category-index="${index}">
+        ${categoryOptionsHtml(category)}
+      </select>
+      ${categories.length > 1 ? `<button class="admin-category-remove" type="button" data-remove-category="${escapeHtml(project.id)}" data-category-index="${index}" aria-label="Remover categoria">×</button>` : ""}
+    </div>
+  `).join("");
+
+  const addButton = categories.length < 3
+    ? `<button class="admin-category-add" type="button" data-add-category="${escapeHtml(project.id)}">+ Adicionar categoria</button>`
+    : "";
+
+  return `<div class="admin-categories" data-project-categories="${escapeHtml(project.id)}">${controls}${addButton}</div>`;
+};
 
 const escapeHtml = (value) => String(value ?? "")
   .replaceAll("&", "&amp;")
@@ -78,8 +117,9 @@ const loadProjects = async () => {
 
   projectsBody.innerHTML = projects.map(project => `
     <tr>
-      <td><strong>${escapeHtml(project.name)}</strong><small>${escapeHtml(project.category || "")}</small></td>
+      <td><strong>${escapeHtml(project.name)}</strong></td>
       <td><code>${escapeHtml(project.slug)}</code></td>
+      <td>${renderCategoryEditor(project)}</td>
       <td>
         <label class="admin-switch">
           <input type="checkbox" data-project-visible="${escapeHtml(project.id)}" ${project.visible ? "checked" : ""}>
@@ -105,6 +145,91 @@ const loadProjects = async () => {
         alert("Não foi possível alterar a visibilidade do projeto.");
       } finally {
         input.disabled = false;
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-category-project]").forEach(select => {
+    select.addEventListener("change", async () => {
+      const project = projects.find(item => item.id === select.dataset.categoryProject);
+      if (!project) return;
+
+      const categories = normalizeCategories(project.category);
+      const index = Number(select.dataset.categoryIndex);
+      const previous = categories[index];
+      categories[index] = select.value;
+
+      if (new Set(categories).size !== categories.length) {
+        alert("Essa categoria já está adicionada ao projeto.");
+        select.value = previous;
+        return;
+      }
+
+      select.disabled = true;
+      try {
+        await updateDoc(doc(db, "projects", project.id), {
+          category: categoryValue(categories),
+          updatedAt: serverTimestamp()
+        });
+        await loadProjects();
+      } catch (error) {
+        console.error(error);
+        select.value = previous;
+        alert("Não foi possível alterar a categoria.");
+      } finally {
+        select.disabled = false;
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-add-category]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const project = projects.find(item => item.id === button.dataset.addCategory);
+      if (!project) return;
+
+      const categories = normalizeCategories(project.category);
+      const next = CATEGORY_OPTIONS.find(category => !categories.includes(category));
+      if (!next || categories.length >= 3) return;
+
+      button.disabled = true;
+      try {
+        await updateDoc(doc(db, "projects", project.id), {
+          category: categoryValue([...categories, next]),
+          updatedAt: serverTimestamp()
+        });
+        await loadProjects();
+      } catch (error) {
+        console.error(error);
+        alert("Não foi possível adicionar a categoria.");
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-remove-category]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const project = projects.find(item => item.id === button.dataset.removeCategory);
+      if (!project) return;
+
+      const categories = normalizeCategories(project.category);
+      if (categories.length <= 1) return;
+
+      const index = Number(button.dataset.categoryIndex);
+      categories.splice(index, 1);
+
+      button.disabled = true;
+      try {
+        await updateDoc(doc(db, "projects", project.id), {
+          category: categoryValue(categories),
+          updatedAt: serverTimestamp()
+        });
+        await loadProjects();
+      } catch (error) {
+        console.error(error);
+        alert("Não foi possível remover a categoria.");
+      } finally {
+        button.disabled = false;
       }
     });
   });
