@@ -1,0 +1,50 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meu perfil — GuiaSys Studio</title><meta name="description" content="Complete e atualize seu cadastro GuiaSys.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css"><meta name="theme-color" content="#019A98">
+</head><body>
+<header class="site-header"><div class="container navbar">
+<a class="brand" href="/"><img src="/assets/img/favicon.svg" alt=""><span>GUIA<em>SYS</em> <small>STUDIO</small></span></a>
+<div class="nav-actions" style="margin-left:auto"><button class="icon-btn" data-theme-toggle aria-label="Alternar tema">◐</button><a class="btn btn-secondary" href="/conta/">Minha conta</a></div>
+</div></header>
+<main>
+<section class="page-hero"><div class="container">
+<span class="eyebrow">Área do cliente</span><h1>Meu perfil</h1>
+<p>Complete seus dados para usar os recursos de compra e licenciamento da GuiaSys.</p>
+</div></section>
+<section class="section profile-section"><div class="container">
+<div id="profile-loading" class="notice">Carregando seu cadastro...</div>
+<div id="profile-content" hidden>
+<div class="profile-topbar"><div><h2>Dados do cliente</h2><p>Confira seus dados antes de salvar.</p></div><span id="profile-status" class="profile-status incomplete">Cadastro incompleto</span></div>
+<form id="profile-form" class="profile-card">
+<h3>Dados pessoais</h3>
+<div class="form-grid">
+<div class="field full"><label for="full-name">Nome completo</label><input id="full-name" autocomplete="name" maxlength="120" required></div>
+<div class="field"><label for="profile-email">E-mail</label><input id="profile-email" type="email" autocomplete="email" readonly></div>
+<div class="field"><label for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required></div>
+<div class="field"><label for="birth-date">Data de nascimento</label><input id="birth-date" type="date" min="1900-01-01" required></div>
+<div class="field"><label for="phone">Telefone / WhatsApp</label><input id="phone" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" maxlength="15" required></div>
+</div>
+
+<div class="profile-divider"></div>
+<h3>Endereço</h3>
+<div class="form-grid">
+<div class="field"><label for="cep">CEP</label><div class="input-action"><input id="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9" required><button class="btn btn-secondary" id="lookup-cep" type="button">Buscar CEP</button></div></div>
+<div class="field"><label for="street">Rua / Logradouro</label><input id="street" autocomplete="address-line1" maxlength="160" required></div>
+<div class="field"><label for="number">Número</label><input id="number" autocomplete="address-line2" maxlength="20" required></div>
+<div class="field"><label for="complement">Complemento</label><input id="complement" maxlength="100" placeholder="Opcional"></div>
+<div class="field"><label for="neighborhood">Bairro</label><input id="neighborhood" maxlength="120" required></div>
+<div class="field"><label for="city">Cidade</label><input id="city" autocomplete="address-level2" maxlength="120" required></div>
+<div class="field"><label for="state">UF</label><input id="state" autocomplete="address-level1" maxlength="2" placeholder="RO" required></div>
+</div>
+
+<div id="profile-message" class="auth-message" aria-live="polite"></div>
+<div class="profile-actions"><a class="btn btn-secondary" href="/conta/">Cancelar</a><button class="btn btn-primary" type="submit">Salvar cadastro</button></div>
+</form>
+</div>
+</div></section></main>
+<footer><div class="container footer-bottom">© <span data-year></span> GuiaSys Studio. Todos os direitos reservados.</div></footer>
+<script src="/assets/js/main.js"></script><script type="module" src="/assets/js/perfil.js"></script>
+</body></html>
