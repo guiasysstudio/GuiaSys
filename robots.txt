@@ -1,3 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /conta/
+Disallow: /login/
+Disallow: /cadastro/
+Disallow: /buscar/
+
 Sitemap: https://www.guiasys.online/sitemap.xml
