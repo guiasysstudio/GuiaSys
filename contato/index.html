@@ -26,13 +26,13 @@
 </header><main>
 <section class="page-hero"><div class="container"><span class="eyebrow">Contato</span><h1>Fale com a GuiaSys</h1><p>Use esta página para falar sobre um projeto, suporte, compra ou outra solicitação.</p></div></section>
 <section class="section"><div class="container contact-grid">
-<div class="contact-card"><h2>Contato direto</h2><p>O WhatsApp e o e-mail oficiais serão conectados aqui assim que os dados de atendimento forem definidos.</p><div class="notice">Nenhuma mensagem é enviada ainda. O formulário está pronto visualmente e será ligado ao backend na etapa de integração.</div></div>
-<form class="form-card" onsubmit="event.preventDefault();alert('Formulário ainda não conectado.');"><div class="form-grid">
+<div class="contact-card"><h2>Contato direto</h2><p>Envie sua mensagem pelo formulário. Ela será recebida diretamente no painel administrativo da GuiaSys.</p><div class="notice">O botão do WhatsApp será adicionado assim que o número oficial de atendimento for informado.</div></div>
+<form class="form-card" id="contact-form"><div class="form-grid">
 <div class="field"><label for="name">Nome</label><input id="name" required autocomplete="name"></div>
 <div class="field"><label for="email">E-mail</label><input id="email" type="email" required autocomplete="email"></div>
-<div class="field full"><label for="project">Assunto</label><select id="project"><option>Contato geral</option><option>GuiaCopy</option><option>GuiaPlay</option><option>GuiaSys Memora</option><option>Outro projeto</option></select></div>
+<div class="field full"><label for="project">Assunto</label><select id="project"><option value="geral">Contato geral</option><option value="guiacopy">GuiaCopy</option><option value="guiaplay">GuiaPlay</option><option value="guiasys-memora">GuiaSys Memora</option><option value="sai-do-casamento">Sai do Casamento</option></select></div>
 <div class="field full"><label for="message">Mensagem</label><textarea id="message" rows="6" required></textarea></div>
-<div class="field full"><button class="btn btn-primary" type="submit">Enviar mensagem</button></div>
+<div class="field full"><div id="contact-message" class="auth-message" aria-live="polite"></div><button class="btn btn-primary" type="submit">Enviar mensagem</button></div>
 </div></form></div></section></main><footer>
   <div class="container footer-grid">
     <div>
@@ -43,4 +43,4 @@
     <div><h4>Conta</h4><a href="/conta/">Minha conta</a><a href="/login/">Entrar</a><a href="/cadastro/">Criar conta</a></div>
   </div>
   <div class="container footer-bottom">© <span data-year></span> GuiaSys Studio. Todos os direitos reservados.</div>
-</footer><script src="/assets/js/main.js"></script><script type="module" src="/assets/js/auth-state.js"></script></body></html>
+</footer><script src="/assets/js/main.js"></script><script type="module" src="/assets/js/auth-state.js"></script><script type="module" src="/assets/js/contact.js"></script></body></html>
