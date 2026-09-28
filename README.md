@@ -6,6 +6,7 @@ Site público da GuiaSys Studio.
 - Estrutura inicial: site estático compatível com GitHub Pages
 - Identidade: #019A98 e #18212D
 - M01: fundação visual, páginas públicas e páginas iniciais de projetos
+- M02 iniciado: Firebase Web + Authentication
 
 ## Estrutura
 - `/` — Início
@@ -14,6 +15,9 @@ Site público da GuiaSys Studio.
 - `/projetos/guiaplay/` — GuiaPlay
 - `/sobre/` — Sobre
 - `/contato/` — Contato
+- `/login/` — Login
+- `/cadastro/` — Cadastro
+- `/conta/` — Área autenticada
 
 ## Próximas etapas
-Firebase Authentication, perfil do cliente, favoritos, carrinho, compras, licenças e PagBank.
+Ativar provedores Google e E-mail/Senha no Firebase, concluir perfil do cliente, favoritos, carrinho, compras, licenças e PagBank.
