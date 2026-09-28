@@ -5,6 +5,7 @@ import {
   updateProfile
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { auth } from "./firebase-app.js";
+import { routeAfterAuthentication } from "./profile-service.js";
 
 const form = document.querySelector("#register-form");
 const name = document.querySelector("#name");
@@ -33,6 +34,10 @@ const friendlyError = (error) => {
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
+  if (name.value.trim().length < 3) {
+    show("Informe seu nome completo.", "error");
+    return;
+  }
   if (password.value.length < 6) {
     show("A senha precisa ter pelo menos 6 caracteres.", "error");
     return;
@@ -46,7 +51,7 @@ form?.addEventListener("submit", async (event) => {
   try {
     const credential = await createUserWithEmailAndPassword(auth, email.value.trim(), password.value);
     await updateProfile(credential.user, { displayName: name.value.trim() });
-    window.location.href = "/conta/";
+    await routeAfterAuthentication(credential.user, "/conta/");
   } catch (error) {
     show(friendlyError(error), "error");
   }
@@ -55,8 +60,8 @@ form?.addEventListener("submit", async (event) => {
 googleButton?.addEventListener("click", async () => {
   show("Abrindo cadastro com Google...");
   try {
-    await signInWithPopup(auth, new GoogleAuthProvider());
-    window.location.href = "/conta/";
+    const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+    await routeAfterAuthentication(credential.user, "/conta/");
   } catch (error) {
     show(friendlyError(error), "error");
   }
