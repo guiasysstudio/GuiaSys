@@ -85,3 +85,23 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:70p
 @media(max-width:560px){.admin-sidebar{grid-template-columns:1fr}.admin-sidebar-head{grid-column:auto}.admin-detail-actions .btn{width:100%}}
 
 .project-gated:not(.project-access-ready) main,.project-gated:not(.project-access-ready) footer{visibility:hidden}
+
+
+/* Authenticated account menu */
+.account-menu-wrap{position:relative;display:inline-flex}
+.account-menu{position:absolute;right:0;top:calc(100% + 10px);width:250px;background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:8px;box-shadow:var(--shadow);z-index:80}
+.account-menu[hidden]{display:none}
+.account-menu-head{padding:10px 11px 12px;border-bottom:1px solid var(--line);margin-bottom:5px}
+.account-menu-head strong{display:block;color:var(--ink);font-size:.96rem}
+.account-menu-head span{display:block;color:var(--muted);font-size:.78rem;overflow-wrap:anywhere;margin-top:2px}
+.account-menu-item{width:100%;display:flex;align-items:center;min-height:42px;padding:0 11px;border:0;border-radius:11px;background:transparent;color:var(--text);font-weight:750;text-align:left;cursor:pointer}
+.account-menu-item:hover{background:var(--surface-2);color:var(--brand)}
+.account-menu-item.admin-entry{color:var(--brand);font-weight:850}
+.account-menu-signout{font-family:inherit}
+@media(max-width:900px){
+  .account-menu-wrap .account-btn{display:inline-flex}
+  .account-menu{right:0}
+}
+@media(max-width:520px){
+  .account-menu{position:fixed;left:16px;right:16px;top:76px;width:auto}
+}
