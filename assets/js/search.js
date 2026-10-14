@@ -1,4 +1,4 @@
-import { loadPublicProjects } from "./public-project-api.js?v=20261014-4";
+import { loadPublicProjects } from "./public-project-api.js?v=20261014-7";
 
 const form = document.querySelector("#site-search-form");
 const input = document.querySelector("#site-search-input");

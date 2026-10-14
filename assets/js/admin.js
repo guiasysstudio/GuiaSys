@@ -27,7 +27,8 @@ const fields = {
   platforms: $("#project-platforms"), status: $("#project-status"), version: $("#project-version"),
   order: $("#project-order"), visible: $("#project-visible"), featured: $("#project-featured"),
   features: $("#project-features"), requirements: $("#project-requirements"), faq: $("#project-faq"),
-  downloadUrl: $("#project-download-url"), supportUrl: $("#project-support-url"), licenseUrl: $("#project-license-url"),
+  downloads: $("#project-downloads"), addDownload: $("#add-project-download"),
+  supportUrl: $("#project-support-url"), licenseUrl: $("#project-license-url"),
   logoFile: $("#project-logo-file"), bannerFile: $("#project-banner-file"), galleryFiles: $("#project-gallery-files"),
   logoRemove: $("#project-logo-remove"), bannerRemove: $("#project-banner-remove"),
   seoTitle: $("#project-seo-title"), seoDescription: $("#project-seo-description")
@@ -168,6 +169,88 @@ const renderGalleryPreview = () => {
   });
 };
 
+const projectDownloads = (project) => {
+  if (Array.isArray(project?.downloads)) {
+    return project.downloads
+      .filter((item) => item?.label && item?.url)
+      .slice(0, 12)
+      .map((item) => ({ label: String(item.label), url: String(item.url) }));
+  }
+  if (!project?.downloadUrl) return [];
+  const platform = Array.isArray(project.platforms) ? project.platforms[0] : "";
+  const label = [platform || "Download principal", project.version ? `versão ${project.version}` : ""].filter(Boolean).join(" — ");
+  return [{ label, url: String(project.downloadUrl) }];
+};
+
+const updateDownloadEditorState = () => {
+  const rows = fields.downloads.querySelectorAll(".download-editor-row");
+  fields.addDownload.disabled = rows.length >= 12;
+  const empty = fields.downloads.querySelector(".download-editor-empty");
+  if (!rows.length && !empty) {
+    const message = document.createElement("div");
+    message.className = "download-editor-empty";
+    message.textContent = "Nenhum download cadastrado. Projetos sem download não exibem o botão Baixar.";
+    fields.downloads.append(message);
+  } else if (rows.length) empty?.remove();
+};
+
+const addDownloadRow = (download = {}) => {
+  if (fields.downloads.querySelectorAll(".download-editor-row").length >= 12) return;
+  fields.downloads.querySelector(".download-editor-empty")?.remove();
+  const row = document.createElement("div");
+  row.className = "download-editor-row";
+  const label = document.createElement("input");
+  label.type = "text";
+  label.maxLength = 80;
+  label.placeholder = "Ex.: Windows x64";
+  label.setAttribute("aria-label", "Nome da opção de download");
+  label.dataset.downloadLabel = "";
+  label.value = download.label || "";
+  const url = document.createElement("input");
+  url.type = "url";
+  url.maxLength = 1000;
+  url.placeholder = "https://...";
+  url.setAttribute("aria-label", "Link direto do download");
+  url.dataset.downloadUrl = "";
+  url.value = download.url || "";
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "download-editor-remove";
+  remove.textContent = "×";
+  remove.setAttribute("aria-label", "Remover opção de download");
+  remove.addEventListener("click", () => { row.remove(); updateDownloadEditorState(); });
+  row.append(label, url, remove);
+  fields.downloads.append(row);
+  updateDownloadEditorState();
+  if (!download.label && !download.url) label.focus();
+};
+
+const renderDownloadEditor = (downloads = []) => {
+  fields.downloads.replaceChildren();
+  downloads.forEach(addDownloadRow);
+  updateDownloadEditorState();
+};
+
+const parseDownloads = (categories) => {
+  const downloads = [...fields.downloads.querySelectorAll(".download-editor-row")].map((row) => ({
+    label: row.querySelector("[data-download-label]").value.trim(),
+    url: row.querySelector("[data-download-url]").value.trim()
+  })).filter((item) => item.label || item.url);
+  if (downloads.some((item) => !item.label || !item.url)) throw new Error("Preencha o nome e o link de cada download, ou remova a linha incompleta.");
+  if (downloads.length && !categories.some((category) => category === "Programa" || category === "Aplicativo")) {
+    throw new Error("Downloads só podem ser cadastrados para projetos das categorias Programa ou Aplicativo.");
+  }
+  downloads.forEach((item) => {
+    let parsed;
+    try { parsed = new URL(item.url); } catch { throw new Error(`O link de “${item.label}” não é uma URL válida.`); }
+    if (!["http:", "https:"].includes(parsed.protocol)) throw new Error(`O link de “${item.label}” deve começar com http:// ou https://.`);
+    item.url = parsed.href;
+  });
+  return downloads.slice(0, 12);
+};
+
+fields.addDownload.addEventListener("click", () => addDownloadRow());
+
 const resetEditor = () => {
   form.reset();
   currentProject = null;
@@ -180,6 +263,7 @@ const resetEditor = () => {
   setPreview($("#project-logo-preview"), "", "", "Sem logo: as iniciais serão usadas.");
   setPreview($("#project-banner-preview"), "", "", "Nenhum banner selecionado.");
   renderGalleryPreview();
+  renderDownloadEditor();
   showFormFeedback("");
 };
 
@@ -202,7 +286,7 @@ const openProject = (project = null) => {
     fields.features.value = (project.features || []).join("\n");
     fields.requirements.value = (project.requirements || []).join("\n");
     fields.faq.value = (project.faq || []).map((item) => `${item.question} | ${item.answer}`).join("\n");
-    fields.downloadUrl.value = project.downloadUrl || "";
+    renderDownloadEditor(projectDownloads(project));
     fields.supportUrl.value = project.supportUrl || "";
     fields.licenseUrl.value = project.licenseUrl || "";
     fields.seoTitle.value = project.seoTitle || "";
@@ -303,6 +387,7 @@ form.addEventListener("submit", async (event) => {
 
   try {
     const faq = parseFaq();
+    const downloads = parseDownloads(categories);
     const logoUpload = fields.logoFile.files[0] ? await uploadImage(fields.logoFile.files[0], slug, "logo") : null;
     const bannerUpload = fields.bannerFile.files[0] ? await uploadImage(fields.bannerFile.files[0], slug, "banner") : null;
     const galleryUploads = [];
@@ -324,7 +409,8 @@ form.addEventListener("submit", async (event) => {
       requirements: lines(fields.requirements.value),
       features: lines(fields.features.value),
       faq,
-      downloadUrl: fields.downloadUrl.value.trim(),
+      downloads,
+      downloadUrl: downloads[0]?.url || "",
       supportUrl: fields.supportUrl.value.trim(),
       licenseUrl: fields.licenseUrl.value.trim(),
       order: Math.max(0, Math.min(9999, Number(fields.order.value) || 0)),

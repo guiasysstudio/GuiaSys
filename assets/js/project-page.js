@@ -1,15 +1,21 @@
-import { loadPublicProject } from "./public-project-api.js?v=20261014-4";
+import { loadPublicProject } from "./public-project-api.js?v=20261014-7";
 
 const byId = (id) => document.getElementById(id);
 const loading = byId("project-loading");
 const errorState = byId("project-error");
 const content = byId("project-content");
+const downloadDialog = byId("download-dialog");
+const downloadDialogOptions = byId("download-dialog-options");
+const downloadDialogTitle = byId("download-dialog-title");
+let lastDownloadTrigger = null;
 
 const slug = decodeURIComponent(location.pathname.split("/").filter(Boolean)[1] || "");
 const initials = (name) => String(name || "GuiaSys").split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join("").toUpperCase();
 const safeUrl = (value) => {
   try {
-    const url = new URL(String(value || ""), location.origin);
+    const input = String(value || "").trim();
+    if (!input) return "";
+    const url = new URL(input, location.origin);
     return ["http:", "https:"].includes(url.protocol) ? url.href : "";
   } catch { return ""; }
 };
@@ -26,6 +32,46 @@ const linkButton = (label, url, primary = false) => {
   return link;
 };
 const showSection = (id, show) => { byId(id).hidden = !show; };
+
+const getDownloads = (project) => {
+  const softwareProject = (project.categories || []).some((category) => category === "Programa" || category === "Aplicativo");
+  if (!softwareProject) return [];
+  const downloads = Array.isArray(project.downloads) ? project.downloads : [];
+  const valid = downloads.map((item) => ({ label: String(item?.label || "").trim(), url: safeUrl(item?.url) }))
+    .filter((item) => item.label && item.url).slice(0, 12);
+  if (valid.length || !safeUrl(project.downloadUrl)) return valid;
+  const platform = Array.isArray(project.platforms) ? project.platforms[0] : "";
+  return [{
+    label: [platform || "Download principal", project.version ? `versão ${project.version}` : ""].filter(Boolean).join(" — "),
+    url: safeUrl(project.downloadUrl)
+  }];
+};
+
+const closeDownloadDialog = () => {
+  if (typeof downloadDialog.close === "function" && downloadDialog.open) downloadDialog.close();
+  else downloadDialog.removeAttribute("open");
+  lastDownloadTrigger?.focus();
+};
+
+const openDownloadDialog = (project, downloads, trigger) => {
+  lastDownloadTrigger = trigger;
+  downloadDialogTitle.textContent = `Baixar ${project.name}`;
+  downloadDialogOptions.replaceChildren();
+  downloads.forEach((download) => {
+    const option = node("a", "download-option", download.label);
+    option.href = download.url;
+    option.target = "_blank";
+    option.rel = "noopener";
+    option.setAttribute("aria-label", `Baixar ${download.label}`);
+    option.addEventListener("click", () => closeDownloadDialog());
+    downloadDialogOptions.append(option);
+  });
+  if (typeof downloadDialog.showModal === "function") downloadDialog.showModal();
+  else downloadDialog.setAttribute("open", "");
+};
+
+byId("download-dialog-close").addEventListener("click", closeDownloadDialog);
+downloadDialog.addEventListener("click", (event) => { if (event.target === downloadDialog) closeDownloadDialog(); });
 
 const setSeo = (project) => {
   const title = project.seoTitle || `${project.name} — GuiaSys Studio`;
@@ -62,10 +108,15 @@ const render = (project) => {
     .filter(Boolean).forEach((item) => facts.append(node("span", "", item)));
 
   const actions = byId("project-actions");
-  const download = safeUrl(project.downloadUrl);
+  const downloads = getDownloads(project);
   const support = safeUrl(project.supportUrl);
   const license = safeUrl(project.licenseUrl);
-  if (download) actions.append(linkButton("Baixar", download, true));
+  if (downloads.length) {
+    const downloadButton = node("button", "btn btn-primary", "Baixar");
+    downloadButton.type = "button";
+    downloadButton.addEventListener("click", () => openDownloadDialog(project, downloads, downloadButton));
+    actions.append(downloadButton);
+  }
   if (support) actions.append(linkButton("Suporte", support));
   actions.append(linkButton("Entrar em contato", `/contato/?projeto=${encodeURIComponent(project.slug)}`));
 

@@ -1,4 +1,4 @@
-const CACHE_KEY = "guiasys-public-projects-v1";
+const CACHE_KEY = "guiasys-public-projects-v2";
 const CACHE_TTL = 5 * 60 * 1000;
 
 const readCache = () => {

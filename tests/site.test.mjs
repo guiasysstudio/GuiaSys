@@ -32,3 +32,31 @@ test("não há dependência de GitHub Pages", async () => {
   assert.equal(config.hosting.public, ".");
   await assert.rejects(readFile(new URL("../CNAME", import.meta.url), "utf8"));
 });
+
+test("downloads aceitam múltiplas opções no CMS e sempre usam seletor público", async () => {
+  const [adminHtml, adminJs, projectHtml, projectJs, functionsJs, rules] = await Promise.all([
+    readFile(new URL("../admin/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../assets/js/admin.js", import.meta.url), "utf8"),
+    readFile(new URL("../projeto/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../assets/js/project-page.js", import.meta.url), "utf8"),
+    readFile(new URL("../functions/index.js", import.meta.url), "utf8"),
+    readFile(new URL("../firestore.rules", import.meta.url), "utf8")
+  ]);
+  assert.match(adminHtml, /id="project-downloads"/);
+  assert.match(adminHtml, /id="add-project-download"/);
+  assert.doesNotMatch(adminHtml, /id="project-download-url"/);
+  assert.match(adminJs, /downloads\.slice\(0, 12\)/);
+  assert.match(projectHtml, /id="download-dialog"/);
+  assert.match(projectJs, /showModal/);
+  assert.match(projectJs, /getDownloads/);
+  assert.match(functionsJs, /downloads: Array\.isArray\(data\.downloads\)/);
+  assert.match(rules, /validDownloads\(request\.resource\.data\.downloads\)/);
+});
+
+test("banner e cabeçalho possuem adaptação para telas menores", async () => {
+  const css = await readFile(new URL("../assets/css/style.css", import.meta.url), "utf8");
+  assert.match(css, /\.dynamic-project-hero\{[^}]*background-size:contain/);
+  assert.match(css, /@media\(max-width:620px\)/);
+  assert.match(css, /\.navbar\{height:68px;gap:8px\}/);
+  assert.match(css, /\.dynamic-project-hero \.hero-actions\{display:grid/);
+});

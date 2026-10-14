@@ -1,4 +1,4 @@
-import { loadPublicProjects } from "./public-project-api.js?v=20261014-4";
+import { loadPublicProjects } from "./public-project-api.js?v=20261014-7";
 
 const grid = document.querySelector("#projects-grid");
 const state = document.querySelector("#projects-state");

@@ -61,18 +61,41 @@ service cloud.firestore {
         && (value.size() < 2 || value[1] in ['Programa', 'Aplicativo', 'Site'])
         && (value.size() < 3 || value[2] in ['Programa', 'Aplicativo', 'Site']);
     }
+    function validDownload(value) {
+      return value is map
+        && value.keys().hasAll(['label', 'url'])
+        && value.keys().hasOnly(['label', 'url'])
+        && validText(value.label, 1, 80)
+        && validText(value.url, 8, 1000)
+        && value.url.matches('^https?://.+$');
+    }
+    function validDownloads(value) {
+      return value is list && value.size() <= 12
+        && (value.size() == 0 || validDownload(value[0]))
+        && (value.size() < 2 || validDownload(value[1]))
+        && (value.size() < 3 || validDownload(value[2]))
+        && (value.size() < 4 || validDownload(value[3]))
+        && (value.size() < 5 || validDownload(value[4]))
+        && (value.size() < 6 || validDownload(value[5]))
+        && (value.size() < 7 || validDownload(value[6]))
+        && (value.size() < 8 || validDownload(value[7]))
+        && (value.size() < 9 || validDownload(value[8]))
+        && (value.size() < 10 || validDownload(value[9]))
+        && (value.size() < 11 || validDownload(value[10]))
+        && (value.size() < 12 || validDownload(value[11]));
+    }
     function validProject(projectId) {
       return request.resource.data.keys().hasAll([
           'slug', 'name', 'shortDescription', 'fullDescription', 'categories',
           'platforms', 'status', 'version', 'requirements', 'features', 'faq',
-          'downloadUrl', 'supportUrl', 'licenseUrl', 'order', 'visible', 'featured',
+          'downloads', 'downloadUrl', 'supportUrl', 'licenseUrl', 'order', 'visible', 'featured',
           'logoUrl', 'logoPath', 'bannerUrl', 'bannerPath', 'gallery',
           'seoTitle', 'seoDescription', 'createdAt', 'updatedAt'
         ])
         && request.resource.data.keys().hasOnly([
           'slug', 'name', 'shortDescription', 'fullDescription', 'categories',
           'platforms', 'status', 'version', 'requirements', 'features', 'faq',
-          'downloadUrl', 'supportUrl', 'licenseUrl', 'order', 'visible', 'featured',
+          'downloads', 'downloadUrl', 'supportUrl', 'licenseUrl', 'order', 'visible', 'featured',
           'logoUrl', 'logoPath', 'bannerUrl', 'bannerPath', 'gallery',
           'seoTitle', 'seoDescription', 'createdAt', 'updatedAt'
         ])
@@ -88,6 +111,7 @@ service cloud.firestore {
         && validStringList(request.resource.data.requirements, 10)
         && validStringList(request.resource.data.features, 10)
         && request.resource.data.faq is list && request.resource.data.faq.size() <= 10
+        && validDownloads(request.resource.data.downloads)
         && validOptionalText(request.resource.data.downloadUrl, 1000)
         && validOptionalText(request.resource.data.supportUrl, 1000)
         && validOptionalText(request.resource.data.licenseUrl, 1000)

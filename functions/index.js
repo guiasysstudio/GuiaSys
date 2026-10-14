@@ -35,6 +35,9 @@ const publicProject = (document) => {
     faq: Array.isArray(data.faq) ? data.faq.map((item) => ({
       question: String(item?.question || ""), answer: String(item?.answer || "")
     })) : [],
+    downloads: Array.isArray(data.downloads) ? data.downloads.slice(0, 12).map((item) => ({
+      label: String(item?.label || ""), url: String(item?.url || "")
+    })).filter((item) => item.label && item.url) : [],
     downloadUrl: String(data.downloadUrl || ""),
     supportUrl: String(data.supportUrl || ""),
     licenseUrl: String(data.licenseUrl || ""),
