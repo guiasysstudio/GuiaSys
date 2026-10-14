@@ -4,8 +4,8 @@ import {
   signInWithPopup,
   updateProfile
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { auth } from "./firebase-app.js?v=20261014";
-import { routeAfterAuthentication } from "./profile-service.js?v=20261014";
+import { auth } from "./firebase-app.js?v=20261014-2";
+import { routeAfterAuthentication } from "./profile-service.js?v=20261014-2";
 
 const form = document.querySelector("#register-form");
 const name = document.querySelector("#name");

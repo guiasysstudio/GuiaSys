@@ -1,5 +1,5 @@
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-app.js?v=20261014";
+import { db } from "./firebase-app.js?v=20261014-2";
 
 const byId = (id) => document.getElementById(id);
 const loading = byId("project-loading");

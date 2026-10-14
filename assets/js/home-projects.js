@@ -4,7 +4,7 @@ import {
   query,
   where
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-app.js?v=20261014";
+import { db } from "./firebase-app.js?v=20261014-2";
 
 const section = document.querySelector("#featured-projects");
 const grid = document.querySelector("#featured-projects-grid");

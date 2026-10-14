@@ -2,7 +2,7 @@ import {
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-app.js?v=20261014";
+import { db } from "./firebase-app.js?v=20261014-2";
 
 export const safeNextPath = (value, fallback = "/conta/") => {
   if (!value || typeof value !== "string") return fallback;

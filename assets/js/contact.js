@@ -6,7 +6,7 @@ import {
   serverTimestamp,
   where
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { auth, db } from "./firebase-app.js?v=20261014";
+import { auth, db } from "./firebase-app.js?v=20261014-2";
 
 const form = document.querySelector("#contact-form");
 const nameInput = document.querySelector("#name");

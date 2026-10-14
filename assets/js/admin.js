@@ -6,7 +6,7 @@ import {
 import {
   deleteObject, getDownloadURL, ref, uploadBytes
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js";
-import { auth, db, storage } from "./firebase-app.js?v=20261014";
+import { auth, db, storage } from "./firebase-app.js?v=20261014-2";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
