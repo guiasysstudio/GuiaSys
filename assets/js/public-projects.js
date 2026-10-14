@@ -9,7 +9,7 @@ import { db } from "./firebase-app.js?v=20261014";
 const grid = document.querySelector("#projects-grid");
 const state = document.querySelector("#projects-state");
 const filters = [...document.querySelectorAll("[data-project-filter]")];
-const labels = { Programa: "Programas", Aplicativo: "Aplicativos", Site: "Sites" };
+const labels = { programa: "Programas", aplicativo: "Aplicativos", site: "Sites" };
 
 let projects = [];
 let activeFilter = "all";
@@ -70,7 +70,9 @@ const createCard = (project) => {
 
 const render = () => {
   const visible = projects.filter((project) =>
-    activeFilter === "all" || (project.categories || []).includes(activeFilter)
+    activeFilter === "all" || (project.categories || []).some((category) =>
+      String(category).toLocaleLowerCase("pt-BR") === activeFilter
+    )
   );
 
   grid.replaceChildren(...visible.map(createCard));

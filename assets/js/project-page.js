@@ -131,7 +131,7 @@ if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     if (!snapshot.exists() || snapshot.data().visible !== true) throw new Error("project_not_public");
     render({ slug: snapshot.id, ...snapshot.data() });
   } catch (error) {
-    if (error?.code && error.code !== "permission-denied") console.error("project_load_failed", error);
+    if (error?.code && !String(error.code).endsWith("permission-denied")) console.error("project_load_failed", error);
     document.querySelector('meta[name="robots"]').content = "noindex,nofollow";
     loading.hidden = true;
     errorState.hidden = false;
