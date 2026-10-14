@@ -4,7 +4,7 @@ import {
   query,
   where
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-app.js";
+import { db } from "./firebase-app.js?v=20261014";
 
 const form = document.querySelector("#site-search-form");
 const input = document.querySelector("#site-search-input");
@@ -39,9 +39,9 @@ const loadProjects = async () => {
       const data = item.data();
       return {
         title: data.name || item.id,
-        description: data.description || `Projeto ${data.name || item.id} da GuiaSys Studio.`,
-        url: data.path || `/projetos/${item.id}/`,
-        keywords: `${data.category || ""} ${data.platforms || ""} projeto`
+        description: data.shortDescription || `Projeto ${data.name || item.id} da GuiaSys Studio.`,
+        url: `/projetos/${encodeURIComponent(item.id)}/`,
+        keywords: `${(data.categories || []).join(" ")} ${(data.platforms || []).join(" ")} ${data.status || ""} projeto`
       };
     }));
   } catch (error) {
