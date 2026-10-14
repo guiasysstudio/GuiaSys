@@ -1,0 +1,6 @@
+firebase-debug.log
+.firebase/
+functions/node_modules/
+node_modules/
+coverage/
+*.local

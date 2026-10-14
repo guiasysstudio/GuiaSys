@@ -1,0 +1,35 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.enabled == true;
+    }
+
+    function projectIsPublic(slug) {
+      return firestore.exists(/databases/(default)/documents/projects/$(slug))
+        && firestore.get(/databases/(default)/documents/projects/$(slug)).data.visible == true;
+    }
+
+    function validImage() {
+      return request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp|gif|svg\\+xml)');
+    }
+
+    match /projects/{slug}/{allPaths=**} {
+      allow read: if isAdmin() || projectIsPublic(slug);
+      allow create, update: if isAdmin() && validImage();
+      allow delete: if isAdmin();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
