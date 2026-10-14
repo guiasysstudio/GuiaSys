@@ -22,7 +22,8 @@ test("o CMS não contém seed e oferece CRUD e upload", async () => {
   assert.doesNotMatch(js, /PROJECT_SEED/);
   assert.match(html, /id="new-project"/);
   assert.match(html, /id="delete-project"/);
-  assert.match(js, /uploadBytes/);
+  assert.match(js, /adminProjectMedia/);
+  assert.match(js, /httpsCallable/);
   assert.match(js, /onSnapshot/);
 });
 

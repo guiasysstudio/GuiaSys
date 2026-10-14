@@ -3,10 +3,8 @@ import {
   collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query,
   serverTimestamp, setDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import {
-  deleteObject, getDownloadURL, ref, uploadBytes
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js";
-import { auth, db, storage } from "./firebase-app.js?v=20261014-2";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
+import { auth, db, functions } from "./firebase-app.js?v=20261014-3";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -19,6 +17,7 @@ const messagesBody = $("#messages-body");
 const messagesFeedback = $("#messages-feedback");
 const messageDetail = $("#message-detail");
 const form = $("#project-form");
+const manageProjectMedia = httpsCallable(functions, "adminProjectMedia");
 
 const fields = {
   originalSlug: $("#project-original-slug"), name: $("#project-name"), slug: $("#project-slug"),
@@ -233,11 +232,21 @@ const validateFile = (file) => {
 
 const uploadImage = async (file, slug, group) => {
   validateFile(file);
-  const safeName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-");
-  const path = `projects/${slug}/${group}/${Date.now()}-${crypto.randomUUID()}-${safeName}`;
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, file, { contentType: file.type, customMetadata: { projectSlug: slug } });
-  return { url: await getDownloadURL(storageRef), path };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+  }
+  const result = await manageProjectMedia({
+    action: "upload", slug, group, name: file.name,
+    contentType: file.type, base64: btoa(binary)
+  });
+  return result.data;
+};
+
+const deleteImage = async (slug, path) => {
+  if (!path) return;
+  await manageProjectMedia({ action: "delete", slug, path });
 };
 
 const parseFaq = () => {
@@ -309,7 +318,7 @@ form.addEventListener("submit", async (event) => {
         (bannerUpload || fields.bannerRemove.checked) && currentProject.bannerPath,
         ...removedGalleryPaths
       ].filter(Boolean);
-      await Promise.allSettled(oldPaths.map((path) => deleteObject(ref(storage, path))));
+      await Promise.allSettled(oldPaths.map((path) => deleteImage(slug, path)));
     } else {
       await setDoc(documentRef, { ...payload, createdAt: serverTimestamp() });
     }
@@ -329,7 +338,7 @@ $("#delete-project").addEventListener("click", async () => {
   const button = $("#delete-project"); button.disabled = true; showFormFeedback("Excluindo projeto...");
   try {
     const paths = [currentProject.logoPath, currentProject.bannerPath, ...(currentProject.gallery || []).map((item) => item.path)].filter(Boolean);
-    await Promise.allSettled(paths.map((path) => deleteObject(ref(storage, path))));
+    await Promise.allSettled(paths.map((path) => deleteImage(currentProject.id, path)));
     await deleteDoc(doc(db, "projects", currentProject.id));
     await closeEditor();
   } catch (error) {
