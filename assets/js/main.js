@@ -1,5 +1,6 @@
 (() => {
   const body = document.body;
+  const root = document.documentElement;
   const themeBtn = document.querySelector('[data-theme-toggle]');
   const menuBtn = document.querySelector('[data-menu-toggle]');
   const nav = document.querySelector('.nav-links');
@@ -21,7 +22,7 @@
       licensing.rel = 'noopener';
       licensing.dataset.licensingBrand = '';
       licensing.setAttribute('aria-label', 'Abrir GuiaSys Licensing');
-      licensing.innerHTML = '<img src="/assets/img/guiasys-licensing-symbol.svg" alt=""><span><strong>GuiaSys</strong><small>Licensing</small></span>';
+      licensing.innerHTML = '<img src="/assets/img/guiasys-licensing-lockup.svg" alt="GuiaSys Licensing">';
 
       studioBrand.insertAdjacentElement('afterend', divider);
       divider.insertAdjacentElement('afterend', licensing);
@@ -30,10 +31,12 @@
 
   installLicensingIdentity();
 
-  const getSavedTheme = () => localStorage.getItem('guiasys-theme');
+  const getSavedTheme = () => {
+    try { return localStorage.getItem('guiasys-theme'); } catch { return null; }
+  };
 
   const applyThemeAssets = () => {
-    const dark = body.classList.contains('dark');
+    const dark = root.classList.contains('dark');
 
     document.querySelectorAll('[data-theme-logo]').forEach((img) => {
       const next = dark ? img.dataset.srcDark : img.dataset.srcLight;
@@ -54,7 +57,7 @@
 
   const syncThemeIcon = () => {
     if (!themeBtn) return;
-    const dark = body.classList.contains('dark');
+    const dark = root.classList.contains('dark');
     themeBtn.textContent = dark ? '☀' : '◐';
     themeBtn.setAttribute('aria-label', dark ? 'Usar tema claro' : 'Usar tema escuro');
     themeBtn.setAttribute('title', dark ? 'Usar tema claro' : 'Usar tema escuro');
@@ -62,7 +65,8 @@
 
   const applyTheme = (theme) => {
     const dark = theme === 'dark' || (theme !== 'light' && systemTheme.matches);
-    body.classList.toggle('dark', dark);
+    root.classList.toggle('dark', dark);
+    root.style.colorScheme = dark ? 'dark' : 'light';
     syncThemeIcon();
     applyThemeAssets();
   };
@@ -70,8 +74,8 @@
   applyTheme(getSavedTheme());
 
   themeBtn?.addEventListener('click', () => {
-    const next = body.classList.contains('dark') ? 'light' : 'dark';
-    localStorage.setItem('guiasys-theme', next);
+    const next = root.classList.contains('dark') ? 'light' : 'dark';
+    try { localStorage.setItem('guiasys-theme', next); } catch {}
     applyTheme(next);
   });
 
@@ -108,17 +112,4 @@
     navActions.insertBefore(searchLink, theme || navActions.firstChild);
   }
 
-  const revealItems = document.querySelectorAll('[data-reveal]');
-  if ('IntersectionObserver' in window && revealItems.length) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
-      });
-    }, { threshold: 0.12 });
-    revealItems.forEach(item => observer.observe(item));
-  } else {
-    revealItems.forEach(item => item.classList.add('is-visible'));
-  }
 })();

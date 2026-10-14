@@ -1,5 +1,4 @@
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-app.js?v=20261014-2";
+import { loadPublicProject } from "./public-project-api.js?v=20261014-4";
 
 const byId = (id) => document.getElementById(id);
 const loading = byId("project-loading");
@@ -127,9 +126,7 @@ if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
   loading.hidden = true; errorState.hidden = false;
 } else {
   try {
-    const snapshot = await getDoc(doc(db, "projects", slug));
-    if (!snapshot.exists() || snapshot.data().visible !== true) throw new Error("project_not_public");
-    render({ slug: snapshot.id, ...snapshot.data() });
+    render(await loadPublicProject(slug));
   } catch (error) {
     if (error?.code && !String(error.code).endsWith("permission-denied")) console.error("project_load_failed", error);
     document.querySelector('meta[name="robots"]').content = "noindex,nofollow";

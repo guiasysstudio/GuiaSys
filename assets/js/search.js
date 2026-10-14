@@ -1,10 +1,4 @@
-import {
-  collection,
-  getDocs,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-app.js?v=20261014-2";
+import { loadPublicProjects } from "./public-project-api.js?v=20261014-4";
 
 const form = document.querySelector("#site-search-form");
 const input = document.querySelector("#site-search-input");
@@ -34,13 +28,12 @@ const escapeHtml = value => String(value ?? "")
 
 const loadProjects = async () => {
   try {
-    const snapshot = await getDocs(query(collection(db, "projects"), where("visible", "==", true)));
-    searchableItems.push(...snapshot.docs.map(item => {
-      const data = item.data();
+    const projects = await loadPublicProjects();
+    searchableItems.push(...projects.map(data => {
       return {
-        title: data.name || item.id,
-        description: data.shortDescription || `Projeto ${data.name || item.id} da GuiaSys Studio.`,
-        url: `/projetos/${encodeURIComponent(item.id)}/`,
+        title: data.name || data.slug,
+        description: data.shortDescription || `Projeto ${data.name || data.slug} da GuiaSys Studio.`,
+        url: `/projetos/${encodeURIComponent(data.slug)}/`,
         keywords: `${(data.categories || []).join(" ")} ${(data.platforms || []).join(" ")} ${data.status || ""} projeto`
       };
     }));

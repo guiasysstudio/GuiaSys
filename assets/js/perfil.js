@@ -9,8 +9,9 @@ import {
   updateDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { auth, db } from "./firebase-app.js?v=20261014-2";
-import { safeNextPath } from "./profile-service.js?v=20261014-2";
+import { auth } from "./firebase-auth.js?v=20261014-4";
+import { db } from "./firebase-db.js?v=20261014-4";
+import { safeNextPath } from "./profile-service.js?v=20261014-4";
 
 const form = document.querySelector("#profile-form");
 const message = document.querySelector("#profile-message");

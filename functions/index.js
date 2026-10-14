@@ -17,6 +17,77 @@ const STATIC_PATHS = [
   "", "projetos/", "sobre/", "contato/", "faq/", "novidades/", "solicitar-projeto/"
 ];
 
+const PROJECT_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const publicProject = (document) => {
+  const data = document.data();
+  return {
+    slug: document.id,
+    name: String(data.name || ""),
+    shortDescription: String(data.shortDescription || ""),
+    fullDescription: String(data.fullDescription || ""),
+    categories: Array.isArray(data.categories) ? data.categories : [],
+    platforms: Array.isArray(data.platforms) ? data.platforms : [],
+    status: String(data.status || ""),
+    version: String(data.version || ""),
+    requirements: Array.isArray(data.requirements) ? data.requirements : [],
+    features: Array.isArray(data.features) ? data.features : [],
+    faq: Array.isArray(data.faq) ? data.faq.map((item) => ({
+      question: String(item?.question || ""), answer: String(item?.answer || "")
+    })) : [],
+    downloadUrl: String(data.downloadUrl || ""),
+    supportUrl: String(data.supportUrl || ""),
+    licenseUrl: String(data.licenseUrl || ""),
+    order: Number.isFinite(data.order) ? data.order : 9999,
+    featured: data.featured === true,
+    logoUrl: String(data.logoUrl || ""),
+    bannerUrl: String(data.bannerUrl || ""),
+    gallery: Array.isArray(data.gallery) ? data.gallery.map((item) => ({
+      url: String(item?.url || ""), alt: String(item?.alt || "")
+    })) : [],
+    seoTitle: String(data.seoTitle || ""),
+    seoDescription: String(data.seoDescription || "")
+  };
+};
+
+exports.publicProjects = onRequest(
+  { region: "southamerica-east1", cors: false, invoker: "public" },
+  async (request, response) => {
+    if (request.method !== "GET") {
+      response.set("Allow", "GET").status(405).json({ error: "method_not_allowed" });
+      return;
+    }
+
+    try {
+      const slug = String(request.query.slug || "");
+      response.set("Cache-Control", "public, max-age=120, s-maxage=600, stale-while-revalidate=86400");
+
+      if (slug) {
+        if (!PROJECT_SLUG.test(slug)) {
+          response.status(400).json({ error: "invalid_slug" });
+          return;
+        }
+        const document = await getFirestore().doc(`projects/${slug}`).get();
+        if (!document.exists || document.data()?.visible !== true) {
+          response.status(404).json({ error: "project_not_found" });
+          return;
+        }
+        response.status(200).json({ project: publicProject(document) });
+        return;
+      }
+
+      const snapshot = await getFirestore().collection("projects").where("visible", "==", true).get();
+      const projects = snapshot.docs.map(publicProject).sort((a, b) =>
+        a.order - b.order || a.name.localeCompare(b.name, "pt-BR")
+      );
+      response.status(200).json({ projects });
+    } catch (error) {
+      console.error("public_projects_failed", error);
+      response.status(503).json({ error: "projects_unavailable" });
+    }
+  }
+);
+
 exports.sitemap = onRequest(
   { region: "southamerica-east1", cors: false, invoker: "public" },
   async (_request, response) => {
@@ -48,7 +119,6 @@ exports.sitemap = onRequest(
   }
 );
 
-const PROJECT_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const IMAGE_TYPE = /^image\/(jpeg|png|webp|gif|svg\+xml)$/;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MEDIA_GROUPS = new Set(["logo", "banner", "gallery"]);

@@ -1,10 +1,4 @@
-import {
-  collection,
-  getDocs,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-app.js?v=20261014-2";
+import { loadPublicProjects } from "./public-project-api.js?v=20261014-4";
 
 const grid = document.querySelector("#projects-grid");
 const state = document.querySelector("#projects-state");
@@ -99,9 +93,7 @@ filters.forEach((button) => {
 });
 
 try {
-  const snapshot = await getDocs(query(collection(db, "projects"), where("visible", "==", true)));
-  projects = snapshot.docs
-    .map((item) => ({ slug: item.id, ...item.data() }))
+  projects = (await loadPublicProjects())
     .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || a.name.localeCompare(b.name, "pt-BR"));
   render();
 } catch (error) {

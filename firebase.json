@@ -35,6 +35,7 @@
     ],
     "rewrites": [
       { "source": "/sitemap.xml", "function": { "functionId": "sitemap", "region": "southamerica-east1" } },
+      { "source": "/api/projects", "function": { "functionId": "publicProjects", "region": "southamerica-east1" } },
       { "source": "/projetos/**", "destination": "/projeto/index.html" }
     ]
   },

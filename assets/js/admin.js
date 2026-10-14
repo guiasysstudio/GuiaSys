@@ -4,7 +4,9 @@ import {
   serverTimestamp, setDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
-import { auth, db, functions } from "./firebase-app.js?v=20261014-3";
+import { auth } from "./firebase-auth.js?v=20261014-4";
+import { db } from "./firebase-db.js?v=20261014-4";
+import { functions } from "./firebase-functions.js?v=20261014-4";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -230,16 +232,46 @@ const validateFile = (file) => {
   if (file.size > 10 * 1024 * 1024) throw new Error(`A imagem ${file.name} ultrapassa 10 MB.`);
 };
 
-const uploadImage = async (file, slug, group) => {
+const optimizeImage = async (file, group) => {
   validateFile(file);
-  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (["image/svg+xml", "image/gif"].includes(file.type) || typeof createImageBitmap !== "function") return file;
+
+  try {
+    const image = await createImageBitmap(file);
+    const limits = group === "logo" ? [1200, 1200] : [1920, 1440];
+    const scale = Math.min(1, limits[0] / image.width, limits[1] / image.height);
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d", { alpha: true });
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.drawImage(image, 0, 0, width, height);
+    image.close();
+
+    const quality = group === "logo" ? 0.9 : 0.84;
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+    if (!blob || (scale === 1 && blob.size >= file.size)) return file;
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "imagem";
+    return new File([blob], `${baseName}.webp`, { type: "image/webp", lastModified: Date.now() });
+  } catch (error) {
+    console.warn("image_optimization_skipped", error);
+    return file;
+  }
+};
+
+const uploadImage = async (file, slug, group) => {
+  const optimized = await optimizeImage(file, group);
+  const bytes = new Uint8Array(await optimized.arrayBuffer());
   let binary = "";
   for (let offset = 0; offset < bytes.length; offset += 0x8000) {
     binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
   }
   const result = await manageProjectMedia({
-    action: "upload", slug, group, name: file.name,
-    contentType: file.type, base64: btoa(binary)
+    action: "upload", slug, group, name: optimized.name,
+    contentType: optimized.type, base64: btoa(binary)
   });
   return result.data;
 };
@@ -367,10 +399,14 @@ onAuthStateChanged(auth, async (user) => {
   try {
     if (!await isAdmin(user.uid)) { loading.hidden = true; denied.hidden = false; return; }
     $("#admin-email").textContent = user.email || "";
-    await loadProjects();
-    watchMessages();
     loading.hidden = true;
     app.hidden = false;
+    watchMessages();
+    loadProjects().catch((error) => {
+      console.error("projects_load_failed", error);
+      projectsFeedback.hidden = false;
+      projectsFeedback.textContent = "Não foi possível carregar os projetos.";
+    });
   } catch (error) {
     console.error("admin_load_failed", error);
     loading.textContent = "Não foi possível carregar o painel administrativo.";

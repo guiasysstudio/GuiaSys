@@ -2,11 +2,7 @@ import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import {
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { auth, db } from "./firebase-app.js?v=20261014-2";
+import { auth } from "./firebase-auth.js?v=20261014-4";
 
 const accountLink = document.querySelector("[data-account-link]");
 let accountMenu = null;
@@ -45,6 +41,10 @@ const openMenu = () => {
 
 const isAdminUser = async (user) => {
   try {
+    const [{ doc, getDoc }, { db }] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"),
+      import("./firebase-db.js?v=20261014-4")
+    ]);
     const snapshot = await getDoc(doc(db, "admins", user.uid));
     return snapshot.exists() && snapshot.data().enabled === true;
   } catch (error) {

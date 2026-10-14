@@ -1,10 +1,3 @@
-import {
-  addDoc,
-  collection,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { auth, db } from "./firebase-app.js?v=20261014-2";
-
 const form = document.querySelector("#project-request-form");
 const feedback = document.querySelector("#project-request-message");
 
@@ -44,6 +37,11 @@ form?.addEventListener("submit", async event => {
   show("Enviando sua solicitação...");
 
   try {
+    const [{ addDoc, collection, serverTimestamp }, { auth }, { db }] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"),
+      import("./firebase-auth.js?v=20261014-4"),
+      import("./firebase-db.js?v=20261014-4")
+    ]);
     await addDoc(collection(db, "contactMessages"), {
       name,
       email,

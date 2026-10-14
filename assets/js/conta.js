@@ -2,8 +2,8 @@ import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { auth } from "./firebase-app.js?v=20261014-2";
-import { getUserProfile, isProfileComplete } from "./profile-service.js?v=20261014-2";
+import { auth } from "./firebase-auth.js?v=20261014-4";
+import { getUserProfile, isProfileComplete } from "./profile-service.js?v=20261014-4";
 
 const loading = document.querySelector("#account-loading");
 const content = document.querySelector("#account-content");

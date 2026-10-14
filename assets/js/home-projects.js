@@ -1,10 +1,4 @@
-import {
-  collection,
-  getDocs,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-app.js?v=20261014-2";
+import { loadPublicProjects } from "./public-project-api.js?v=20261014-4";
 
 const section = document.querySelector("#featured-projects");
 const grid = document.querySelector("#featured-projects-grid");
@@ -53,9 +47,7 @@ const makeCard = (project) => {
 
 if (section && grid) {
   try {
-    const snapshot = await getDocs(query(collection(db, "projects"), where("visible", "==", true)));
-    const projects = snapshot.docs
-      .map((item) => ({ slug: item.id, ...item.data() }))
+    const projects = (await loadPublicProjects())
       .filter((project) => project.featured === true)
       .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999))
       .slice(0, 6);
