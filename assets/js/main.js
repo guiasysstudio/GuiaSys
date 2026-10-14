@@ -5,6 +5,31 @@
   const nav = document.querySelector('.nav-links');
   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
 
+  const installLicensingIdentity = () => {
+    document.querySelectorAll('.navbar').forEach((navbar) => {
+      const studioBrand = navbar.querySelector(':scope > .brand');
+      if (!studioBrand || navbar.querySelector('[data-licensing-brand]')) return;
+
+      const divider = document.createElement('span');
+      divider.className = 'brand-divider';
+      divider.setAttribute('aria-hidden', 'true');
+
+      const licensing = document.createElement('a');
+      licensing.className = 'licensing-brand';
+      licensing.href = 'https://licencas.guiasys.online/';
+      licensing.target = '_blank';
+      licensing.rel = 'noopener';
+      licensing.dataset.licensingBrand = '';
+      licensing.setAttribute('aria-label', 'Abrir GuiaSys Licensing');
+      licensing.innerHTML = '<img src="/assets/img/guiasys-licensing-symbol.svg" alt=""><span><strong>GuiaSys</strong><small>Licensing</small></span>';
+
+      studioBrand.insertAdjacentElement('afterend', divider);
+      divider.insertAdjacentElement('afterend', licensing);
+    });
+  };
+
+  installLicensingIdentity();
+
   const getSavedTheme = () => localStorage.getItem('guiasys-theme');
 
   const applyThemeAssets = () => {

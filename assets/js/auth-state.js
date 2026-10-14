@@ -6,11 +6,18 @@ import {
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { auth, db } from "./firebase-app.js";
+import { auth, db } from "./firebase-app.js?v=20261014";
 
 const accountLink = document.querySelector("[data-account-link]");
 let accountMenu = null;
 let accountWrap = null;
+
+const escapeHtml = (value) => String(value ?? "")
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;")
+  .replaceAll("'", "&#039;");
 
 const removeMenu = () => {
   accountMenu?.remove();
@@ -67,8 +74,8 @@ const buildAccountMenu = async (user) => {
 
   accountMenu.innerHTML = `
     <div class="account-menu-head">
-      <strong>${firstName}</strong>
-      <span>${email}</span>
+      <strong>${escapeHtml(firstName)}</strong>
+      <span>${escapeHtml(email)}</span>
     </div>
     <a class="account-menu-item" href="/conta/">Minha conta</a>
     ${admin ? '<a class="account-menu-item admin-entry" href="/admin/">Painel administrativo</a>' : ''}

@@ -2,8 +2,8 @@ import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { auth } from "./firebase-app.js";
-import { getUserProfile, isProfileComplete } from "./profile-service.js";
+import { auth } from "./firebase-app.js?v=20261014";
+import { getUserProfile, isProfileComplete } from "./profile-service.js?v=20261014";
 
 const loading = document.querySelector("#account-loading");
 const content = document.querySelector("#account-content");
@@ -32,7 +32,16 @@ onAuthStateChanged(auth, async (user) => {
     emailEl.textContent = user.email || profile.email || "";
 
     if (user.photoURL) {
-      avatar.innerHTML = `<img src="${user.photoURL}" alt="">`;
+      try {
+        const photoUrl = new URL(user.photoURL);
+        if (photoUrl.protocol !== "https:") throw new Error("invalid-photo-url");
+        const image = document.createElement("img");
+        image.src = photoUrl.href;
+        image.alt = "";
+        avatar.replaceChildren(image);
+      } catch {
+        avatar.textContent = name.trim().charAt(0).toUpperCase() || "G";
+      }
     } else {
       avatar.textContent = name.trim().charAt(0).toUpperCase() || "G";
     }
