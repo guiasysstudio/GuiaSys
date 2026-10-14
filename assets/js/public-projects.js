@@ -81,7 +81,7 @@ const render = () => {
     state.innerHTML = `<strong>Nenhum projeto encontrado.</strong><p>${
       activeFilter === "all"
         ? "Ainda não há projetos publicados."
-        : `Ainda não há projetos publicados em ${labels[activeFilter] || "esta categoria"}.`
+        : `Ainda não há projetos publicados na categoria ${labels[activeFilter] || "selecionada"}.`
     }</p>`;
   }
 };
