@@ -22,7 +22,7 @@
       licensing.rel = 'noopener';
       licensing.dataset.licensingBrand = '';
       licensing.setAttribute('aria-label', 'Abrir GuiaSys Licensing');
-      licensing.innerHTML = '<img src="/assets/img/guiasys-licensing-lockup.svg" alt="GuiaSys Licensing">';
+      licensing.innerHTML = '<img src="/assets/img/guiasys-licensing-lockup.svg?v=official-20261014" alt="GuiaSys Licensing" width="254" height="86">';
 
       studioBrand.insertAdjacentElement('afterend', divider);
       divider.insertAdjacentElement('afterend', licensing);
