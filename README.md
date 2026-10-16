@@ -3,8 +3,7 @@
 Site institucional e CMS da GuiaSys Studio, publicado exclusivamente no Firebase.
 
 - Produção: <https://www.guiasys.com.br/>
-- Projeto Firebase atual durante a transição: `guiasys`
-- Projeto Firebase de destino: `guiasys-licensing` (`GuiaSys Platform`)
+- Projeto Firebase: `guiasys-licensing` (`GuiaSys Platform`)
 - Repositório: <https://github.com/guiasysstudio/GuiaSys>
 - Stack: HTML, CSS e JavaScript modular; Firebase Authentication, Cloud Firestore, Storage, Hosting e Cloud Functions.
 
@@ -14,6 +13,7 @@ Site institucional e CMS da GuiaSys Studio, publicado exclusivamente no Firebase
 - `/projetos/` — catálogo dinâmico de projetos públicos.
 - `/projetos/{slug}/` — página dinâmica de um projeto; não exige um HTML por projeto.
 - `/admin/` — CMS protegido por `studioAdmins/{uid}.enabled == true`.
+- `adminProjectWrite` — criação, edição, publicação e exclusão de projetos pelo backend autenticado; o navegador não grava projetos diretamente no Firestore.
 - `/conta/` e `/conta/perfil/` — conta autenticada e perfil do cliente.
 - `studioContactMessages` — atendimento em tempo real no ADM.
 - `studioProfiles/{uid}` — perfil do site, separado de `customerAccounts/{uid}` do Licensing.

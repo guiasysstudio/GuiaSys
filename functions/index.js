@@ -1,8 +1,9 @@
 const { randomUUID } = require("node:crypto");
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+const { FieldValue, getFirestore } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
+const { PROJECT_SLUG, ProjectValidationError, normalizeStudioProject } = require("./project-write");
 
 initializeApp();
 
@@ -17,13 +18,20 @@ const STATIC_PATHS = [
   "", "projetos/", "sobre/", "contato/", "faq/", "novidades/", "solicitar-projeto/"
 ];
 
-const PROJECT_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const STUDIO_COLLECTIONS = Object.freeze({
   admins: "studioAdmins",
   projects: "studioProjects"
 });
 const STUDIO_MEDIA_ROOT = "studio-projects";
 const CANONICAL_SITE_URL = "https://guiasys.com.br";
+const STUDIO_ADMIN_CORS = [
+  "https://guiasys.com.br",
+  "https://www.guiasys.com.br",
+  "https://guiasys-studio-e1ea8.web.app",
+  "https://guiasys-studio-e1ea8.firebaseapp.com",
+  /^https:\/\/guiasys--[a-z0-9-]+\.web\.app$/,
+  /^https:\/\/guiasys-studio-e1ea8--[a-z0-9-]+\.web\.app$/
+];
 
 const publicProject = (document) => {
   const data = document.data();
@@ -144,17 +152,54 @@ const safeFileName = (value) => String(value || "imagem")
   .replace(/[^a-zA-Z0-9._-]/g, "-")
   .slice(-180);
 
+exports.adminProjectWrite = onCall(
+  { region: "southamerica-east1", cors: STUDIO_ADMIN_CORS },
+  async (request) => {
+    await requireAdmin(request);
+    const { action, slug: rawSlug } = request.data || {};
+    const slug = String(rawSlug || "").trim();
+    if (!PROJECT_SLUG.test(slug)) throw new HttpsError("invalid-argument", "Slug inválido.");
+
+    const documentRef = getFirestore().doc(`${STUDIO_COLLECTIONS.projects}/${slug}`);
+    if (action === "delete") {
+      await documentRef.delete();
+      return { ok: true, slug };
+    }
+
+    if (action === "visibility") {
+      if (typeof request.data?.visible !== "boolean") {
+        throw new HttpsError("invalid-argument", "A visibilidade informada é inválida.");
+      }
+      const snapshot = await documentRef.get();
+      if (!snapshot.exists) throw new HttpsError("not-found", "Projeto não encontrado.");
+      await documentRef.update({ visible: request.data.visible, updatedAt: FieldValue.serverTimestamp() });
+      return { ok: true, slug, visible: request.data.visible };
+    }
+
+    if (action !== "save") throw new HttpsError("invalid-argument", "Ação administrativa inválida.");
+    let project;
+    try {
+      project = normalizeStudioProject(slug, request.data?.project);
+    } catch (error) {
+      if (error instanceof ProjectValidationError) throw new HttpsError("invalid-argument", error.message);
+      throw error;
+    }
+
+    const snapshot = await documentRef.get();
+    const timestamp = FieldValue.serverTimestamp();
+    await documentRef.set({
+      ...project,
+      createdAt: snapshot.exists && snapshot.get("createdAt") ? snapshot.get("createdAt") : timestamp,
+      updatedAt: timestamp
+    }, { merge: false });
+    return { ok: true, slug, created: !snapshot.exists };
+  }
+);
+
 exports.adminProjectMedia = onCall(
   {
     region: "southamerica-east1",
-    cors: [
-      "https://guiasys.com.br",
-      "https://www.guiasys.com.br",
-      "https://guiasys-studio-e1ea8.web.app",
-      "https://guiasys-studio-e1ea8.firebaseapp.com",
-      /^https:\/\/guiasys--[a-z0-9-]+\.web\.app$/,
-      /^https:\/\/guiasys-studio-e1ea8--[a-z0-9-]+\.web\.app$/
-    ]
+    cors: STUDIO_ADMIN_CORS
   },
   async (request) => {
     await requireAdmin(request);

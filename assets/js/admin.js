@@ -1,7 +1,7 @@
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
   collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query,
-  serverTimestamp, setDoc, updateDoc
+  serverTimestamp, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
 import { auth } from "./firebase-auth.js?v=20261015-2";
@@ -21,6 +21,7 @@ const messagesFeedback = $("#messages-feedback");
 const messageDetail = $("#message-detail");
 const form = $("#project-form");
 const manageProjectMedia = httpsCallable(functions, "adminProjectMedia");
+const manageProjectWrite = httpsCallable(functions, "adminProjectWrite");
 
 const fields = {
   originalSlug: $("#project-original-slug"), name: $("#project-name"), slug: $("#project-slug"),
@@ -52,6 +53,13 @@ const commaList = (value) => String(value || "").split(",").map((item) => item.t
 const initials = (name) => String(name || "GuiaSys").split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join("").toUpperCase();
 const formatDate = (timestamp) => timestamp?.toDate ? timestamp.toDate().toLocaleString("pt-BR") : "—";
 const showFormFeedback = (text, type = "") => { const target = $("#project-form-feedback"); target.textContent = text; target.className = `auth-message ${type}`; };
+const projectErrorMessage = (error) => {
+  const message = String(error?.message || "").replace(/^FirebaseError:\s*/i, "").trim();
+  if (/missing or insufficient permissions/i.test(message) || /permission-denied/i.test(String(error?.code || ""))) {
+    return "Sua conta não possui permissão para salvar projetos. Atualize o painel e entre novamente.";
+  }
+  return message || "Não foi possível salvar o projeto.";
+};
 
 const legacyCategories = (project) => {
   if (Array.isArray(project.categories)) return project.categories;
@@ -136,7 +144,7 @@ const renderProjects = () => {
     card.querySelector("[data-edit]").addEventListener("click", () => openProject(project));
     card.querySelector("[data-toggle]").addEventListener("click", async (event) => {
       event.currentTarget.disabled = true;
-      try { await updateDoc(doc(db, STUDIO_COLLECTIONS.projects, project.id), { visible: !project.visible, updatedAt: serverTimestamp() }); await loadProjects(); }
+      try { await manageProjectWrite({ action: "visibility", slug: project.id, visible: !project.visible }); await loadProjects(); }
       catch (error) { console.error(error); projectsFeedback.hidden = false; projectsFeedback.textContent = "Não foi possível alterar a publicação."; }
     });
     projectsGrid.append(card);
@@ -367,7 +375,7 @@ const deleteImage = async (slug, path) => {
 };
 
 const parseFaq = () => {
-  return lines(fields.faq.value).map((entry) => {
+  return lines(fields.faq.value, 30).map((entry) => {
     const separator = entry.indexOf("|");
     if (separator < 1 || !entry.slice(separator + 1).trim()) throw new Error("No FAQ, use o formato “Pergunta | Resposta”, uma por linha.");
     return { question: entry.slice(0, separator).trim().slice(0, 240), answer: entry.slice(separator + 1).trim().slice(0, 1200) };
@@ -407,8 +415,8 @@ form.addEventListener("submit", async (event) => {
       platforms: commaList(fields.platforms.value),
       status: fields.status.value.trim(),
       version: fields.version.value.trim(),
-      requirements: lines(fields.requirements.value),
-      features: lines(fields.features.value),
+      requirements: lines(fields.requirements.value, 50),
+      features: lines(fields.features.value, 50),
       faq,
       downloads,
       downloadUrl: downloads[0]?.url || "",
@@ -427,9 +435,8 @@ form.addEventListener("submit", async (event) => {
       updatedAt: serverTimestamp()
     };
 
-    const documentRef = doc(db, STUDIO_COLLECTIONS.projects, slug);
+    await manageProjectWrite({ action: "save", slug, project: payload });
     if (currentProject) {
-      await setDoc(documentRef, { ...payload, createdAt: currentProject.createdAt }, { merge: false });
       const retainedGalleryPaths = new Set(currentGallery.map((item) => item.path).filter(Boolean));
       const removedGalleryPaths = (currentProject.gallery || []).map((item) => item.path).filter((path) => path && !retainedGalleryPaths.has(path));
       const oldPaths = [
@@ -438,15 +445,13 @@ form.addEventListener("submit", async (event) => {
         ...removedGalleryPaths
       ].filter(Boolean);
       await Promise.allSettled(oldPaths.map((path) => deleteImage(slug, path)));
-    } else {
-      await setDoc(documentRef, { ...payload, createdAt: serverTimestamp() });
     }
 
     showFormFeedback(visible ? "Projeto salvo e publicado." : "Projeto salvo como oculto.", "success");
     window.setTimeout(closeEditor, 650);
   } catch (error) {
     console.error("project_save_failed", error);
-    showFormFeedback(error.message || "Não foi possível salvar o projeto.", "error");
+    showFormFeedback(projectErrorMessage(error), "error");
   } finally {
     buttons.forEach((button) => { button.disabled = false; });
   }
@@ -457,8 +462,8 @@ $("#delete-project").addEventListener("click", async () => {
   const button = $("#delete-project"); button.disabled = true; showFormFeedback("Excluindo projeto...");
   try {
     const paths = [currentProject.logoPath, currentProject.bannerPath, ...(currentProject.gallery || []).map((item) => item.path)].filter(Boolean);
+    await manageProjectWrite({ action: "delete", slug: currentProject.id });
     await Promise.allSettled(paths.map((path) => deleteImage(currentProject.id, path)));
-    await deleteDoc(doc(db, STUDIO_COLLECTIONS.projects, currentProject.id));
     await closeEditor();
   } catch (error) {
     console.error("project_delete_failed", error); showFormFeedback("Não foi possível excluir o projeto.", "error"); button.disabled = false;

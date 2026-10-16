@@ -23,8 +23,10 @@ test("o CMS não contém seed e oferece CRUD e upload", async () => {
   assert.match(html, /id="new-project"/);
   assert.match(html, /id="delete-project"/);
   assert.match(js, /adminProjectMedia/);
+  assert.match(js, /adminProjectWrite/);
   assert.match(js, /httpsCallable/);
   assert.match(js, /onSnapshot/);
+  assert.doesNotMatch(js, /setDoc\(documentRef/);
 });
 
 test("não há dependência de GitHub Pages", async () => {

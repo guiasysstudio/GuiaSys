@@ -83,6 +83,8 @@ test("código e regras usam somente namespaces Studio", async () => {
     assert.match(`${schema}\n${rules}`, new RegExp(namespace));
   }
   assert.match(functions, /STUDIO_MEDIA_ROOT = "studio-projects"/);
+  assert.match(functions, /exports\.adminProjectWrite\s*=\s*onCall/);
+  assert.match(functions, /normalizeStudioProject/);
   assert.doesNotMatch(functions, /getFirestore\(\)\.collection\("projects"\)/);
   assert.doesNotMatch(functions, /getFirestore\(\)\.doc\(`admins\//);
 });

@@ -4,7 +4,7 @@
   "main": "index.js",
   "engines": { "node": "22" },
   "scripts": {
-    "test": "node --check index.js"
+    "test": "node --test test/*.test.js && node --check index.js && node --check project-write.js"
   },
   "dependencies": {
     "firebase-admin": "^14.5.0",
