@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "source": "functions-legacy-sitemap",
+    "codebase": "default",
+    "runtime": "nodejs22",
+    "ignore": [
+      "test"
+    ],
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" install --no-audit --no-fund --package-lock=false",
+      "npm --prefix \"$RESOURCE_DIR\" test"
+    ]
+  }
+}

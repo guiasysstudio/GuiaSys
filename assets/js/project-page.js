@@ -76,7 +76,7 @@ downloadDialog.addEventListener("click", (event) => { if (event.target === downl
 const setSeo = (project) => {
   const title = project.seoTitle || `${project.name} — GuiaSys Studio`;
   const description = project.seoDescription || project.shortDescription || `Conheça ${project.name}, projeto da GuiaSys Studio.`;
-  const canonical = `https://www.guiasys.online/projetos/${encodeURIComponent(project.slug)}/`;
+  const canonical = `https://guiasys.com.br/projetos/${encodeURIComponent(project.slug)}/`;
   document.title = title;
   document.querySelector('meta[name="description"]').content = description;
   document.querySelector('link[rel="canonical"]').href = canonical;

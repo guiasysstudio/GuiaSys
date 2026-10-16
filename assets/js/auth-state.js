@@ -2,7 +2,8 @@ import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { auth } from "./firebase-auth.js?v=20261014-4";
+import { auth } from "./firebase-auth.js?v=20261015-2";
+import { STUDIO_COLLECTIONS } from "./firebase-schema.js?v=20261015-1";
 
 const accountLink = document.querySelector("[data-account-link]");
 let accountMenu = null;
@@ -43,9 +44,9 @@ const isAdminUser = async (user) => {
   try {
     const [{ doc, getDoc }, { db }] = await Promise.all([
       import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"),
-      import("./firebase-db.js?v=20261014-4")
+      import("./firebase-db.js?v=20261015-2")
     ]);
-    const snapshot = await getDoc(doc(db, "admins", user.uid));
+    const snapshot = await getDoc(doc(db, STUDIO_COLLECTIONS.admins, user.uid));
     return snapshot.exists() && snapshot.data().enabled === true;
   } catch (error) {
     console.error("Não foi possível verificar a permissão administrativa.", error);

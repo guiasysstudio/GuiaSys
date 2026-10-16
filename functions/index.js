@@ -18,6 +18,12 @@ const STATIC_PATHS = [
 ];
 
 const PROJECT_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const STUDIO_COLLECTIONS = Object.freeze({
+  admins: "studioAdmins",
+  projects: "studioProjects"
+});
+const STUDIO_MEDIA_ROOT = "studio-projects";
+const CANONICAL_SITE_URL = "https://guiasys.com.br";
 
 const publicProject = (document) => {
   const data = document.data();
@@ -70,7 +76,7 @@ exports.publicProjects = onRequest(
           response.status(400).json({ error: "invalid_slug" });
           return;
         }
-        const document = await getFirestore().doc(`projects/${slug}`).get();
+        const document = await getFirestore().doc(`${STUDIO_COLLECTIONS.projects}/${slug}`).get();
         if (!document.exists || document.data()?.visible !== true) {
           response.status(404).json({ error: "project_not_found" });
           return;
@@ -79,7 +85,7 @@ exports.publicProjects = onRequest(
         return;
       }
 
-      const snapshot = await getFirestore().collection("projects").where("visible", "==", true).get();
+      const snapshot = await getFirestore().collection(STUDIO_COLLECTIONS.projects).where("visible", "==", true).get();
       const projects = snapshot.docs.map(publicProject).sort((a, b) =>
         a.order - b.order || a.name.localeCompare(b.name, "pt-BR")
       );
@@ -96,13 +102,13 @@ exports.sitemap = onRequest(
   async (_request, response) => {
     try {
       const snapshot = await getFirestore()
-        .collection("projects")
+        .collection(STUDIO_COLLECTIONS.projects)
         .where("visible", "==", true)
         .get();
 
       const urls = [
-        ...STATIC_PATHS.map((path) => `https://www.guiasys.online/${path}`),
-        ...snapshot.docs.map((doc) => `https://www.guiasys.online/projetos/${encodeURIComponent(doc.id)}/`)
+        ...STATIC_PATHS.map((path) => `${CANONICAL_SITE_URL}/${path}`),
+        ...snapshot.docs.map((doc) => `${CANONICAL_SITE_URL}/projetos/${encodeURIComponent(doc.id)}/`)
       ];
 
       const body = [
@@ -125,11 +131,9 @@ exports.sitemap = onRequest(
 const IMAGE_TYPE = /^image\/(jpeg|png|webp|gif|svg\+xml)$/;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MEDIA_GROUPS = new Set(["logo", "banner", "gallery"]);
-const STORAGE_BUCKET = "guiasys.firebasestorage.app";
-
 const requireAdmin = async (request) => {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Faça login para continuar.");
-  const admin = await getFirestore().doc(`admins/${request.auth.uid}`).get();
+  const admin = await getFirestore().doc(`${STUDIO_COLLECTIONS.admins}/${request.auth.uid}`).get();
   if (!admin.exists || admin.data()?.enabled !== true) {
     throw new HttpsError("permission-denied", "Acesso administrativo necessário.");
   }
@@ -141,16 +145,26 @@ const safeFileName = (value) => String(value || "imagem")
   .slice(-180);
 
 exports.adminProjectMedia = onCall(
-  { region: "southamerica-east1", cors: ["https://www.guiasys.online", "https://guiasys.web.app", /^https:\/\/guiasys--[a-z0-9-]+\.web\.app$/] },
+  {
+    region: "southamerica-east1",
+    cors: [
+      "https://guiasys.com.br",
+      "https://www.guiasys.com.br",
+      "https://guiasys-studio-e1ea8.web.app",
+      "https://guiasys-studio-e1ea8.firebaseapp.com",
+      /^https:\/\/guiasys--[a-z0-9-]+\.web\.app$/,
+      /^https:\/\/guiasys-studio-e1ea8--[a-z0-9-]+\.web\.app$/
+    ]
+  },
   async (request) => {
     await requireAdmin(request);
     const { action, slug } = request.data || {};
     if (!PROJECT_SLUG.test(String(slug || ""))) throw new HttpsError("invalid-argument", "Slug inválido.");
 
-    const bucket = getStorage().bucket(STORAGE_BUCKET);
+    const bucket = getStorage().bucket();
     if (action === "delete") {
       const path = String(request.data?.path || "");
-      if (!path.startsWith(`projects/${slug}/`)) throw new HttpsError("invalid-argument", "Caminho inválido.");
+      if (!path.startsWith(`${STUDIO_MEDIA_ROOT}/${slug}/`)) throw new HttpsError("invalid-argument", "Caminho inválido.");
       await bucket.file(path).delete({ ignoreNotFound: true });
       return { ok: true };
     }
@@ -168,7 +182,7 @@ exports.adminProjectMedia = onCall(
     }
 
     const token = randomUUID();
-    const path = `projects/${slug}/${group}/${Date.now()}-${randomUUID()}-${safeFileName(request.data?.name)}`;
+    const path = `${STUDIO_MEDIA_ROOT}/${slug}/${group}/${Date.now()}-${randomUUID()}-${safeFileName(request.data?.name)}`;
     await bucket.file(path).save(bytes, {
       resumable: false,
       metadata: {
@@ -178,7 +192,7 @@ exports.adminProjectMedia = onCall(
       }
     });
 
-    const url = `https://firebasestorage.googleapis.com/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(path)}?alt=media&token=${token}`;
+    const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(path)}?alt=media&token=${token}`;
     return { url, path };
   }
 );

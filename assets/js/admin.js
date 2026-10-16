@@ -4,9 +4,10 @@ import {
   serverTimestamp, setDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
-import { auth } from "./firebase-auth.js?v=20261014-4";
-import { db } from "./firebase-db.js?v=20261014-4";
-import { functions } from "./firebase-functions.js?v=20261014-4";
+import { auth } from "./firebase-auth.js?v=20261015-2";
+import { db } from "./firebase-db.js?v=20261015-2";
+import { functions } from "./firebase-functions.js?v=20261015-2";
+import { STUDIO_COLLECTIONS } from "./firebase-schema.js?v=20261015-1";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -58,7 +59,7 @@ const legacyCategories = (project) => {
 };
 
 const isAdmin = async (uid) => {
-  const snapshot = await getDoc(doc(db, "admins", uid));
+  const snapshot = await getDoc(doc(db, STUDIO_COLLECTIONS.admins, uid));
   return snapshot.exists() && snapshot.data().enabled === true;
 };
 
@@ -98,20 +99,20 @@ const openMessage = async (item) => {
   messageDetail.querySelector("[data-close-detail]").addEventListener("click", () => { messageDetail.hidden = true; });
   messageDetail.querySelectorAll("[data-status]").forEach((button) => button.addEventListener("click", async () => {
     button.disabled = true;
-    await updateDoc(doc(db, "contactMessages", item.id), { status: button.dataset.status, updatedAt: serverTimestamp() });
+    await updateDoc(doc(db, STUDIO_COLLECTIONS.contacts, item.id), { status: button.dataset.status, updatedAt: serverTimestamp() });
     messageDetail.hidden = true;
   }));
   messageDetail.querySelector("[data-delete-message]").addEventListener("click", async () => {
     if (!window.confirm("Excluir esta mensagem permanentemente?")) return;
-    await deleteDoc(doc(db, "contactMessages", item.id));
+    await deleteDoc(doc(db, STUDIO_COLLECTIONS.contacts, item.id));
     messageDetail.hidden = true;
   });
-  if (item.status === "new") await updateDoc(doc(db, "contactMessages", item.id), { status: "read", updatedAt: serverTimestamp() });
+  if (item.status === "new") await updateDoc(doc(db, STUDIO_COLLECTIONS.contacts, item.id), { status: "read", updatedAt: serverTimestamp() });
 };
 
 const watchMessages = () => {
   stopMessages?.();
-  stopMessages = onSnapshot(query(collection(db, "contactMessages"), orderBy("createdAt", "desc")), (snapshot) => {
+  stopMessages = onSnapshot(query(collection(db, STUDIO_COLLECTIONS.contacts), orderBy("createdAt", "desc")), (snapshot) => {
     messages = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
     renderMessages();
   }, (error) => {
@@ -135,7 +136,7 @@ const renderProjects = () => {
     card.querySelector("[data-edit]").addEventListener("click", () => openProject(project));
     card.querySelector("[data-toggle]").addEventListener("click", async (event) => {
       event.currentTarget.disabled = true;
-      try { await updateDoc(doc(db, "projects", project.id), { visible: !project.visible, updatedAt: serverTimestamp() }); await loadProjects(); }
+      try { await updateDoc(doc(db, STUDIO_COLLECTIONS.projects, project.id), { visible: !project.visible, updatedAt: serverTimestamp() }); await loadProjects(); }
       catch (error) { console.error(error); projectsFeedback.hidden = false; projectsFeedback.textContent = "Não foi possível alterar a publicação."; }
     });
     projectsGrid.append(card);
@@ -145,7 +146,7 @@ const renderProjects = () => {
 const loadProjects = async () => {
   projectsFeedback.hidden = false;
   projectsFeedback.textContent = "Carregando projetos...";
-  const snapshot = await getDocs(collection(db, "projects"));
+  const snapshot = await getDocs(collection(db, STUDIO_COLLECTIONS.projects));
   projects = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))
     .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || String(a.name).localeCompare(String(b.name), "pt-BR"));
   renderProjects();
@@ -426,7 +427,7 @@ form.addEventListener("submit", async (event) => {
       updatedAt: serverTimestamp()
     };
 
-    const documentRef = doc(db, "projects", slug);
+    const documentRef = doc(db, STUDIO_COLLECTIONS.projects, slug);
     if (currentProject) {
       await setDoc(documentRef, { ...payload, createdAt: currentProject.createdAt }, { merge: false });
       const retainedGalleryPaths = new Set(currentGallery.map((item) => item.path).filter(Boolean));
@@ -457,7 +458,7 @@ $("#delete-project").addEventListener("click", async () => {
   try {
     const paths = [currentProject.logoPath, currentProject.bannerPath, ...(currentProject.gallery || []).map((item) => item.path)].filter(Boolean);
     await Promise.allSettled(paths.map((path) => deleteImage(currentProject.id, path)));
-    await deleteDoc(doc(db, "projects", currentProject.id));
+    await deleteDoc(doc(db, STUDIO_COLLECTIONS.projects, currentProject.id));
     await closeEditor();
   } catch (error) {
     console.error("project_delete_failed", error); showFormFeedback("Não foi possível excluir o projeto.", "error"); button.disabled = false;

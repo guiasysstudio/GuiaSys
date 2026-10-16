@@ -1,5 +1,25 @@
 {
   "projects": {
-    "default": "guiasys"
+    "legacy": "guiasys",
+    "platform": "guiasys-licensing"
+  },
+  "targets": {
+    "guiasys": {
+      "hosting": {
+        "studio": [
+          "guiasys"
+        ],
+        "studio-legacy": [
+          "guiasys"
+        ]
+      }
+    },
+    "guiasys-licensing": {
+      "hosting": {
+        "studio": [
+          "guiasys-studio-e1ea8"
+        ]
+      }
+    }
   }
 }

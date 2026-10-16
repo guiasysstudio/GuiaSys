@@ -9,9 +9,10 @@ import {
   updateDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { auth } from "./firebase-auth.js?v=20261014-4";
-import { db } from "./firebase-db.js?v=20261014-4";
-import { safeNextPath } from "./profile-service.js?v=20261014-4";
+import { auth } from "./firebase-auth.js?v=20261015-2";
+import { db } from "./firebase-db.js?v=20261015-2";
+import { safeNextPath } from "./profile-service.js?v=20261015-2";
+import { STUDIO_COLLECTIONS } from "./firebase-schema.js?v=20261015-1";
 
 const form = document.querySelector("#profile-form");
 const message = document.querySelector("#profile-message");
@@ -184,7 +185,7 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
   try {
-    const ref = doc(db, "users", user.uid);
+    const ref = doc(db, STUDIO_COLLECTIONS.profiles, user.uid);
     const snapshot = await getDoc(ref);
     existingProfile = snapshot.exists() ? snapshot.data() : null;
     fillProfile(existingProfile, user);
@@ -230,7 +231,7 @@ form?.addEventListener("submit", async (event) => {
   };
 
   try {
-    const ref = doc(db, "users", currentUser.uid);
+    const ref = doc(db, STUDIO_COLLECTIONS.profiles, currentUser.uid);
 
     if (existingProfile) {
       await updateDoc(ref, payload);

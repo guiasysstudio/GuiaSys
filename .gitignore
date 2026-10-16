@@ -1,6 +1,10 @@
 firebase-debug.log
+firestore-debug.log
+storage-debug.log
+ui-debug.log
 .firebase/
 functions/node_modules/
+functions-legacy-sitemap/node_modules/
 node_modules/
 coverage/
 *.local

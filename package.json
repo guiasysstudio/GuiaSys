@@ -1,8 +1,9 @@
 {
   "name": "guiasys-studio-site",
   "private": true,
+  "type": "module",
   "scripts": {
     "check": "node scripts/validate.mjs",
-    "test": "node --test tests/site.test.mjs"
+    "test": "node --test tests/*.test.mjs"
   }
 }

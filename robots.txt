@@ -6,4 +6,4 @@ Disallow: /login/
 Disallow: /cadastro/
 Disallow: /buscar/
 
-Sitemap: https://www.guiasys.online/sitemap.xml
+Sitemap: https://guiasys.com.br/sitemap.xml

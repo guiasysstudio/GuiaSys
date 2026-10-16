@@ -1,3 +1,5 @@
+import { STUDIO_COLLECTIONS } from "./firebase-schema.js?v=20261015-1";
+
 const form = document.querySelector("#project-request-form");
 const feedback = document.querySelector("#project-request-message");
 
@@ -39,10 +41,10 @@ form?.addEventListener("submit", async event => {
   try {
     const [{ addDoc, collection, serverTimestamp }, { auth }, { db }] = await Promise.all([
       import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"),
-      import("./firebase-auth.js?v=20261014-4"),
-      import("./firebase-db.js?v=20261014-4")
+      import("./firebase-auth.js?v=20261015-2"),
+      import("./firebase-db.js?v=20261015-2")
     ]);
-    await addDoc(collection(db, "contactMessages"), {
+    await addDoc(collection(db, STUDIO_COLLECTIONS.contacts), {
       name,
       email,
       projectSlug: "solicitacao-projeto",

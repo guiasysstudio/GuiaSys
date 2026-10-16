@@ -5,6 +5,11 @@
   const menuBtn = document.querySelector('[data-menu-toggle]');
   const nav = document.querySelector('.nav-links');
   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+  const licensingUrl = 'https://licencas.guiasys.com.br/';
+
+  document.querySelectorAll('[data-licensing-link]').forEach((link) => {
+    link.href = licensingUrl;
+  });
 
   const installLicensingIdentity = () => {
     document.querySelectorAll('.navbar').forEach((navbar) => {
@@ -17,7 +22,7 @@
 
       const licensing = document.createElement('a');
       licensing.className = 'licensing-brand';
-      licensing.href = 'https://licencas.guiasys.online/';
+      licensing.href = licensingUrl;
       licensing.target = '_blank';
       licensing.rel = 'noopener';
       licensing.dataset.licensingBrand = '';

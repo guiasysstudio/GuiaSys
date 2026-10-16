@@ -1,4 +1,4 @@
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { app } from "./firebase-app.js?v=20261014-4";
+import { app } from "./firebase-app.js?v=20261015-2";
 
 export const auth = getAuth(app);

@@ -2,7 +2,8 @@ import {
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { db } from "./firebase-db.js?v=20261014-4";
+import { db } from "./firebase-db.js?v=20261015-2";
+import { STUDIO_COLLECTIONS } from "./firebase-schema.js?v=20261015-1";
 
 export const safeNextPath = (value, fallback = "/conta/") => {
   if (!value || typeof value !== "string") return fallback;
@@ -11,7 +12,7 @@ export const safeNextPath = (value, fallback = "/conta/") => {
 };
 
 export const getUserProfile = async (uid) => {
-  const snapshot = await getDoc(doc(db, "users", uid));
+  const snapshot = await getDoc(doc(db, STUDIO_COLLECTIONS.profiles, uid));
   return snapshot.exists() ? snapshot.data() : null;
 };
 
