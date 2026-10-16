@@ -77,7 +77,8 @@ exports.publicProjects = onRequest(
 
     try {
       const slug = String(request.query.slug || "");
-      response.set("Cache-Control", "public, max-age=120, s-maxage=600, stale-while-revalidate=86400");
+      response.set("Cache-Control", "no-store, max-age=0");
+      response.set("CDN-Cache-Control", "no-store");
 
       if (slug) {
         if (!PROJECT_SLUG.test(slug)) {

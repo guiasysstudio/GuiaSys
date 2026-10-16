@@ -62,3 +62,31 @@ test("banner e cabeçalho possuem adaptação para telas menores", async () => {
   assert.match(css, /\.navbar\{height:68px;gap:8px\}/);
   assert.match(css, /\.dynamic-project-hero \.hero-actions\{display:grid/);
 });
+
+test("catálogo público sempre consulta a versão atual dos projetos", async () => {
+  const api = await readFile(new URL("../assets/js/public-project-api.js", import.meta.url), "utf8");
+  assert.match(api, /cache:\s*"no-store"/);
+  assert.match(api, /API_VERSION/);
+  assert.doesNotMatch(api, /sessionStorage/);
+  assert.doesNotMatch(api, /cached\?\.find/);
+});
+
+test("API pública impede cache de documentos e listas de projetos", async () => {
+  const functionsJs = await readFile(new URL("../functions/index.js", import.meta.url), "utf8");
+  assert.match(functionsJs, /response\.set\("Cache-Control", "no-store, max-age=0"\)/);
+  assert.match(functionsJs, /response\.set\("CDN-Cache-Control", "no-store"\)/);
+});
+
+test("página pública possui seções para todos os campos editoriais", async () => {
+  const [html, js] = await Promise.all([
+    readFile(new URL("../projeto/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../assets/js/project-page.js", import.meta.url), "utf8")
+  ]);
+  for (const id of ["project-short", "project-description", "project-features", "project-requirements", "project-faq"]) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.match(js, /project\.fullDescription/);
+  assert.match(js, /project\.features/);
+  assert.match(js, /project\.requirements/);
+  assert.match(js, /project\.faq/);
+});

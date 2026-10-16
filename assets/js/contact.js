@@ -1,4 +1,4 @@
-import { loadPublicProjects } from "./public-project-api.js?v=20261014-7";
+import { loadPublicProjects } from "./public-project-api.js?v=20261016-1";
 import { STUDIO_COLLECTIONS } from "./firebase-schema.js?v=20261015-1";
 
 const form = document.querySelector("#contact-form");

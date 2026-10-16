@@ -1,4 +1,4 @@
-import { loadPublicProject } from "./public-project-api.js?v=20261014-7";
+import { loadPublicProject } from "./public-project-api.js?v=20261016-1";
 
 const byId = (id) => document.getElementById(id);
 const loading = byId("project-loading");
