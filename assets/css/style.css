@@ -338,6 +338,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:70p
 .requirements-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;list-style:none;padding:0;margin:0}
 .requirements-list li{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;color:var(--text)}
 .requirements-list li::before{content:"✓";color:var(--brand);font-weight:950;margin-right:10px}
+.custom-link-icon{width:20px;height:20px;object-fit:contain;border-radius:4px;margin-right:8px;vertical-align:middle}
+.custom-link-editor-row{grid-template-columns:minmax(150px,.8fr) minmax(220px,1.3fr) minmax(180px,1fr) auto}
 .project-gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 .project-gallery img{width:100%;height:min(38vw,420px);object-fit:contain;object-position:center;border-radius:22px;border:1px solid var(--line);background:var(--surface);overflow:hidden}
 

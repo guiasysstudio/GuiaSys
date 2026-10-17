@@ -30,7 +30,8 @@ const fields = {
   order: $("#project-order"), visible: $("#project-visible"), featured: $("#project-featured"),
   features: $("#project-features"), requirements: $("#project-requirements"), faq: $("#project-faq"),
   downloads: $("#project-downloads"), addDownload: $("#add-project-download"),
-  supportUrl: $("#project-support-url"), licenseUrl: $("#project-license-url"),
+  supportUrl: $("#project-support-url"), licenseUrl: $("#project-license-url"), plansUrl: $("#project-plans-url"),
+  customLinks: $("#project-custom-links"), addCustomLink: $("#add-project-custom-link"),
   logoFile: $("#project-logo-file"), bannerFile: $("#project-banner-file"), galleryFiles: $("#project-gallery-files"),
   logoRemove: $("#project-logo-remove"), bannerRemove: $("#project-banner-remove"),
   seoTitle: $("#project-seo-title"), seoDescription: $("#project-seo-description")
@@ -260,6 +261,45 @@ const parseDownloads = (categories) => {
 
 fields.addDownload.addEventListener("click", () => addDownloadRow());
 
+const updateCustomLinkEditorState = () => {
+  const rows = fields.customLinks.querySelectorAll(".custom-link-editor-row");
+  fields.addCustomLink.disabled = rows.length >= 12;
+  const empty = fields.customLinks.querySelector(".download-editor-empty");
+  if (!rows.length && !empty) {
+    const message = document.createElement("div");
+    message.className = "download-editor-empty";
+    message.textContent = "Nenhum botão personalizado cadastrado.";
+    fields.customLinks.append(message);
+  } else if (rows.length) empty?.remove();
+};
+
+const addCustomLinkRow = (link = {}) => {
+  if (fields.customLinks.querySelectorAll(".custom-link-editor-row").length >= 12) return;
+  fields.customLinks.querySelector(".download-editor-empty")?.remove();
+  const row = document.createElement("div");
+  row.className = "download-editor-row custom-link-editor-row";
+  row.dataset.iconUrl = link.iconUrl || "";
+  row.dataset.iconPath = link.iconPath || "";
+  const label = document.createElement("input");
+  label.type = "text"; label.maxLength = 80; label.placeholder = "Texto do botão"; label.dataset.customLinkLabel = ""; label.value = link.label || "";
+  const url = document.createElement("input");
+  url.type = "url"; url.maxLength = 1000; url.placeholder = "https://..."; url.dataset.customLinkUrl = ""; url.value = link.url || "";
+  const icon = document.createElement("input");
+  icon.type = "file"; icon.accept = "image/png,image/jpeg,image/x-icon,image/vnd.microsoft.icon,.ico"; icon.dataset.customLinkIcon = "";
+  const remove = document.createElement("button");
+  remove.type = "button"; remove.className = "download-editor-remove"; remove.textContent = "×"; remove.setAttribute("aria-label", "Remover botão personalizado");
+  remove.addEventListener("click", () => { row.remove(); updateCustomLinkEditorState(); });
+  row.append(label, url, icon, remove); fields.customLinks.append(row); updateCustomLinkEditorState();
+};
+
+const renderCustomLinkEditor = (links = []) => {
+  fields.customLinks.replaceChildren();
+  links.slice(0, 12).forEach(addCustomLinkRow);
+  updateCustomLinkEditorState();
+};
+
+fields.addCustomLink.addEventListener("click", () => addCustomLinkRow());
+
 const resetEditor = () => {
   form.reset();
   currentProject = null;
@@ -273,6 +313,7 @@ const resetEditor = () => {
   setPreview($("#project-banner-preview"), "", "", "Nenhum banner selecionado.");
   renderGalleryPreview();
   renderDownloadEditor();
+  renderCustomLinkEditor();
   showFormFeedback("");
 };
 
@@ -298,6 +339,8 @@ const openProject = (project = null) => {
     renderDownloadEditor(projectDownloads(project));
     fields.supportUrl.value = project.supportUrl || "";
     fields.licenseUrl.value = project.licenseUrl || "";
+    fields.plansUrl.value = project.plansUrl || "";
+    renderCustomLinkEditor(Array.isArray(project.customLinks) ? project.customLinks : []);
     fields.seoTitle.value = project.seoTitle || "";
     fields.seoDescription.value = project.seoDescription || "";
     legacyCategories(project).forEach((category) => { const input = form.querySelector(`[name="project-category"][value="${category}"]`); if (input) input.checked = true; });
@@ -323,6 +366,13 @@ const validateFile = (file) => {
   if (!file) return;
   if (!file.type.startsWith("image/")) throw new Error("Selecione apenas arquivos de imagem.");
   if (file.size > 10 * 1024 * 1024) throw new Error(`A imagem ${file.name} ultrapassa 10 MB.`);
+};
+
+const validateLinkIcon = (file) => {
+  if (!file) return;
+  const allowed = ["image/png", "image/jpeg", "image/x-icon", "image/vnd.microsoft.icon"];
+  if (!allowed.includes(file.type) && !/\.ico$/i.test(file.name)) throw new Error("O ícone deve ser PNG, JPG ou ICO.");
+  if (file.size > 2 * 1024 * 1024) throw new Error(`O ícone ${file.name} ultrapassa 2 MB.`);
 };
 
 const optimizeImage = async (file, group) => {
@@ -356,7 +406,8 @@ const optimizeImage = async (file, group) => {
 };
 
 const uploadImage = async (file, slug, group) => {
-  const optimized = await optimizeImage(file, group);
+  if (group === "link-icons") validateLinkIcon(file);
+  const optimized = group === "link-icons" ? file : await optimizeImage(file, group);
   const bytes = new Uint8Array(await optimized.arrayBuffer());
   let binary = "";
   for (let offset = 0; offset < bytes.length; offset += 0x8000) {
@@ -367,6 +418,22 @@ const uploadImage = async (file, slug, group) => {
     contentType: optimized.type, base64: btoa(binary)
   });
   return result.data;
+};
+
+const parseAndUploadCustomLinks = async (slug) => {
+  const items = [];
+  for (const row of fields.customLinks.querySelectorAll(".custom-link-editor-row")) {
+    const label = row.querySelector("[data-custom-link-label]").value.trim();
+    const urlValue = row.querySelector("[data-custom-link-url]").value.trim();
+    const file = row.querySelector("[data-custom-link-icon]").files[0];
+    if (!label && !urlValue && !file) continue;
+    if (!label || !urlValue) throw new Error("Preencha o texto e o link de cada botão personalizado.");
+    let parsed; try { parsed = new URL(urlValue); } catch { throw new Error(`O link de “${label}” não é válido.`); }
+    if (parsed.protocol !== "https:") throw new Error(`O link de “${label}” deve começar com https://.`);
+    const uploaded = file ? await uploadImage(file, slug, "link-icons") : null;
+    items.push({ label, url: parsed.href, iconUrl: uploaded?.url || row.dataset.iconUrl || "", iconPath: uploaded?.path || row.dataset.iconPath || "" });
+  }
+  return items.slice(0, 12);
 };
 
 const deleteImage = async (slug, path) => {
@@ -397,6 +464,7 @@ form.addEventListener("submit", async (event) => {
   try {
     const faq = parseFaq();
     const downloads = parseDownloads(categories);
+    const customLinks = await parseAndUploadCustomLinks(slug);
     const logoUpload = fields.logoFile.files[0] ? await uploadImage(fields.logoFile.files[0], slug, "logo") : null;
     const bannerUpload = fields.bannerFile.files[0] ? await uploadImage(fields.bannerFile.files[0], slug, "banner") : null;
     const galleryUploads = [];
@@ -422,6 +490,8 @@ form.addEventListener("submit", async (event) => {
       downloadUrl: downloads[0]?.url || "",
       supportUrl: fields.supportUrl.value.trim(),
       licenseUrl: fields.licenseUrl.value.trim(),
+      plansUrl: fields.plansUrl.value.trim(),
+      customLinks,
       order: Math.max(0, Math.min(9999, Number(fields.order.value) || 0)),
       visible,
       featured: fields.featured.checked,
@@ -444,6 +514,8 @@ form.addEventListener("submit", async (event) => {
         (bannerUpload || fields.bannerRemove.checked) && currentProject.bannerPath,
         ...removedGalleryPaths
       ].filter(Boolean);
+      const retainedCustomPaths = new Set(customLinks.map((item) => item.iconPath).filter(Boolean));
+      oldPaths.push(...(currentProject.customLinks || []).map((item) => item.iconPath).filter((path) => path && !retainedCustomPaths.has(path)));
       await Promise.allSettled(oldPaths.map((path) => deleteImage(slug, path)));
     }
 
@@ -461,7 +533,7 @@ $("#delete-project").addEventListener("click", async () => {
   if (!currentProject || !window.confirm(`Excluir “${currentProject.name}” e todas as imagens enviadas?`)) return;
   const button = $("#delete-project"); button.disabled = true; showFormFeedback("Excluindo projeto...");
   try {
-    const paths = [currentProject.logoPath, currentProject.bannerPath, ...(currentProject.gallery || []).map((item) => item.path)].filter(Boolean);
+    const paths = [currentProject.logoPath, currentProject.bannerPath, ...(currentProject.gallery || []).map((item) => item.path), ...(currentProject.customLinks || []).map((item) => item.iconPath)].filter(Boolean);
     await manageProjectWrite({ action: "delete", slug: currentProject.id });
     await Promise.allSettled(paths.map((path) => deleteImage(currentProject.id, path)));
     await closeEditor();

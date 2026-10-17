@@ -1,4 +1,5 @@
 const { randomUUID } = require("node:crypto");
+const { Readable } = require("node:stream");
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app");
 const { FieldValue, getFirestore } = require("firebase-admin/firestore");
@@ -49,12 +50,16 @@ const publicProject = (document) => {
     faq: Array.isArray(data.faq) ? data.faq.map((item) => ({
       question: String(item?.question || ""), answer: String(item?.answer || "")
     })) : [],
-    downloads: Array.isArray(data.downloads) ? data.downloads.slice(0, 12).map((item) => ({
-      label: String(item?.label || ""), url: String(item?.url || "")
-    })).filter((item) => item.label && item.url) : [],
-    downloadUrl: String(data.downloadUrl || ""),
+    downloads: Array.isArray(data.downloads) ? data.downloads.slice(0, 12).map((item, index) => ({
+      label: String(item?.label || ""), url: `/api/download?project=${encodeURIComponent(document.id)}&option=${index}`
+    })).filter((item) => item.label) : [],
+    downloadUrl: "",
     supportUrl: String(data.supportUrl || ""),
     licenseUrl: String(data.licenseUrl || ""),
+    plansUrl: String(data.plansUrl || ""),
+    customLinks: Array.isArray(data.customLinks) ? data.customLinks.slice(0, 12).map((item) => ({
+      label: String(item?.label || ""), url: String(item?.url || ""), iconUrl: String(item?.iconUrl || "")
+    })).filter((item) => item.label && item.url) : [],
     order: Number.isFinite(data.order) ? data.order : 9999,
     featured: data.featured === true,
     logoUrl: String(data.logoUrl || ""),
@@ -106,6 +111,60 @@ exports.publicProjects = onRequest(
   }
 );
 
+const safeDownloadName = (value) => String(value || "download")
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 160) || "download";
+
+exports.projectDownload = onRequest(
+  { region: "southamerica-east1", cors: false, invoker: "public", timeoutSeconds: 540, memory: "512MiB" },
+  async (request, response) => {
+    if (!['GET', 'HEAD'].includes(request.method)) {
+      response.set("Allow", "GET, HEAD").status(405).send("Método não permitido.");
+      return;
+    }
+    try {
+      const slug = String(request.query.project || "");
+      const option = Number(request.query.option);
+      if (!PROJECT_SLUG.test(slug) || !Number.isInteger(option) || option < 0 || option > 11) {
+        response.status(400).send("Download inválido."); return;
+      }
+      const document = await getFirestore().doc(`${STUDIO_COLLECTIONS.projects}/${slug}`).get();
+      const data = document.data();
+      const download = Array.isArray(data?.downloads) ? data.downloads[option] : null;
+      if (!document.exists || data?.visible !== true || !download?.url) {
+        response.status(404).send("Download não encontrado."); return;
+      }
+      const upstreamUrl = new URL(String(download.url));
+      if (upstreamUrl.protocol !== "https:" || /^(localhost|127\.|10\.|192\.168\.|169\.254\.|\[?::1\]?)/i.test(upstreamUrl.hostname)) {
+        response.status(400).send("Origem de download inválida."); return;
+      }
+      const headers = { "User-Agent": "GuiaSys-Studio-Download/1.0", Accept: "*/*" };
+      if (request.headers.range) headers.Range = request.headers.range;
+      const upstream = await fetch(upstreamUrl, { method: request.method, headers, redirect: "follow" });
+      if (!upstream.ok && upstream.status !== 206) {
+        response.status(502).send("Arquivo temporariamente indisponível."); return;
+      }
+      const fileName = safeDownloadName(upstreamUrl.pathname.split("/").pop() || download.label);
+      response.status(upstream.status);
+      response.set("Content-Type", upstream.headers.get("content-type") || "application/octet-stream");
+      response.set("Content-Disposition", `attachment; filename="${fileName}"`);
+      response.set("Cache-Control", "private, no-store");
+      response.set("X-Content-Type-Options", "nosniff");
+      for (const header of ["content-length", "content-range", "accept-ranges", "last-modified", "etag"]) {
+        const value = upstream.headers.get(header); if (value) response.set(header, value);
+      }
+      if (request.method === "HEAD" || !upstream.body) { response.end(); return; }
+      Readable.fromWeb(upstream.body).on("error", (error) => {
+        console.error("download_stream_failed", { slug, option, message: error.message });
+        if (!response.headersSent) response.status(502).end(); else response.end();
+      }).pipe(response);
+    } catch (error) {
+      console.error("project_download_failed", error);
+      if (!response.headersSent) response.status(503).send("Download temporariamente indisponível.");
+    }
+  }
+);
+
 exports.sitemap = onRequest(
   { region: "southamerica-east1", cors: false, invoker: "public" },
   async (_request, response) => {
@@ -137,9 +196,9 @@ exports.sitemap = onRequest(
   }
 );
 
-const IMAGE_TYPE = /^image\/(jpeg|png|webp|gif|svg\+xml)$/;
+const IMAGE_TYPE = /^image\/(jpeg|png|webp|gif|svg\+xml|x-icon|vnd\.microsoft\.icon)$/;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
-const MEDIA_GROUPS = new Set(["logo", "banner", "gallery"]);
+const MEDIA_GROUPS = new Set(["logo", "banner", "gallery", "link-icons"]);
 const requireAdmin = async (request) => {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Faça login para continuar.");
   const admin = await getFirestore().doc(`${STUDIO_COLLECTIONS.admins}/${request.auth.uid}`).get();

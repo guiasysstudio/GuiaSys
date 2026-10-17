@@ -60,8 +60,6 @@ const openDownloadDialog = (project, downloads, trigger) => {
   downloads.forEach((download) => {
     const option = node("a", "download-option", download.label);
     option.href = download.url;
-    option.target = "_blank";
-    option.rel = "noopener";
     option.setAttribute("aria-label", `Baixar ${download.label}`);
     option.addEventListener("click", () => closeDownloadDialog());
     downloadDialogOptions.append(option);
@@ -111,6 +109,7 @@ const render = (project) => {
   const downloads = getDownloads(project);
   const support = safeUrl(project.supportUrl);
   const license = safeUrl(project.licenseUrl);
+  const plans = safeUrl(project.plansUrl);
   if (downloads.length) {
     const downloadButton = node("button", "btn btn-primary", "Baixar");
     downloadButton.type = "button";
@@ -119,6 +118,14 @@ const render = (project) => {
   }
   if (support) actions.append(linkButton("Suporte", support));
   actions.append(linkButton("Entrar em contato", `/contato/?projeto=${encodeURIComponent(project.slug)}`));
+  if (plans) actions.append(linkButton("Planos", plans, true));
+  (project.customLinks || []).forEach((item) => {
+    const url = safeUrl(item?.url); if (!url || !item?.label) return;
+    const link = linkButton(item.label, url);
+    const iconUrl = safeUrl(item.iconUrl);
+    if (iconUrl) { const icon = node("img", "custom-link-icon"); icon.src = iconUrl; icon.alt = ""; link.prepend(icon); }
+    actions.append(link);
+  });
 
   const description = String(project.fullDescription || "").trim();
   if (description) {

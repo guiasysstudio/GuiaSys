@@ -11,7 +11,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { auth } from "./firebase-auth.js?v=20261015-2";
 import { db } from "./firebase-db.js?v=20261015-2";
-import { safeNextPath } from "./profile-service.js?v=20261015-2";
+import { getUserProfile, safeNextPath, saveSharedProfile } from "./profile-service.js?v=20261017-1";
 import { STUDIO_COLLECTIONS } from "./firebase-schema.js?v=20261015-1";
 
 const form = document.querySelector("#profile-form");
@@ -185,9 +185,7 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
   try {
-    const ref = doc(db, STUDIO_COLLECTIONS.profiles, user.uid);
-    const snapshot = await getDoc(ref);
-    existingProfile = snapshot.exists() ? snapshot.data() : null;
+    existingProfile = await getUserProfile(user.uid);
     fillProfile(existingProfile, user);
     loading.hidden = true;
     content.hidden = false;
@@ -231,6 +229,7 @@ form?.addEventListener("submit", async (event) => {
   };
 
   try {
+    await saveSharedProfile(payload);
     const ref = doc(db, STUDIO_COLLECTIONS.profiles, currentUser.uid);
 
     if (existingProfile) {

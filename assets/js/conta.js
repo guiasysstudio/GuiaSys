@@ -3,7 +3,7 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { auth } from "./firebase-auth.js?v=20261015-2";
-import { getUserProfile, isProfileComplete } from "./profile-service.js?v=20261015-2";
+import { getUserProfile, isProfileComplete } from "./profile-service.js?v=20261017-1";
 
 const loading = document.querySelector("#account-loading");
 const content = document.querySelector("#account-content");

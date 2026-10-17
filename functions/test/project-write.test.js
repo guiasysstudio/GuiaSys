@@ -18,6 +18,8 @@ const minimal = (overrides = {}) => ({
   downloads: [],
   supportUrl: "",
   licenseUrl: "",
+  plansUrl: "",
+  customLinks: [],
   order: 0,
   visible: false,
   featured: false,
@@ -55,6 +57,8 @@ test("preserva todos os campos preenchidos de projeto existente", () => {
     downloads: [{ label: "Windows x64", url: "https://example.com/app.exe" }],
     supportUrl: "https://guiasys.com.br/contato/",
     licenseUrl: "https://licencas.guiasys.com.br/",
+    plansUrl: "https://licencas.guiasys.com.br/programas/guia-play",
+    customLinks: [{ label: "Documentação", url: "https://guiasys.com.br/docs/", iconUrl: "https://example.com/icon.png", iconPath: "studio-projects/guia-play/link-icons/icon.png" }],
     order: 1,
     visible: true,
     featured: true,
@@ -76,6 +80,8 @@ test("preserva todos os campos preenchidos de projeto existente", () => {
   assert.equal(project.features[0], "Múltiplas telas");
   assert.equal(project.gallery[0].path, "studio-projects/guia-play/gallery/tela.png");
   assert.equal(project.seoDescription, "Player multimídia da GuiaSys.");
+  assert.equal(project.plansUrl, "https://licencas.guiasys.com.br/programas/guia-play");
+  assert.equal(project.customLinks[0].label, "Documentação");
 });
 
 test("aceita até cinquenta recursos e requisitos sem descartar conteúdo", () => {

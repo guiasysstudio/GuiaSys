@@ -5,7 +5,7 @@ import {
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { auth } from "./firebase-auth.js?v=20261015-2";
-import { routeAfterAuthentication, safeNextPath } from "./profile-service.js?v=20261015-2";
+import { routeAfterAuthentication, safeNextPath } from "./profile-service.js?v=20261017-1";
 
 const form = document.querySelector("#login-form");
 const email = document.querySelector("#email");

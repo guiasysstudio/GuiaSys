@@ -53,6 +53,24 @@ test("downloads aceitam múltiplas opções no CMS e sempre usam seletor públic
   assert.match(projectJs, /getDownloads/);
   assert.match(functionsJs, /downloads: Array\.isArray\(data\.downloads\)/);
   assert.match(rules, /validDownloads\(request\.resource\.data\.downloads\)/);
+  assert.match(functionsJs, /exports\.projectDownload/);
+  assert.match(functionsJs, /\/api\/download\?project=/);
+  assert.doesNotMatch(projectJs, /option\.target\s*=\s*"_blank"/);
+});
+
+test("planos e botões personalizados são opcionais e administráveis", async () => {
+  const [adminHtml, adminJs, projectJs, writer] = await Promise.all([
+    readFile(new URL("../admin/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../assets/js/admin.js", import.meta.url), "utf8"),
+    readFile(new URL("../assets/js/project-page.js", import.meta.url), "utf8"),
+    readFile(new URL("../functions/project-write.js", import.meta.url), "utf8")
+  ]);
+  assert.match(adminHtml, /project-plans-url/);
+  assert.match(adminHtml, /project-custom-links/);
+  assert.match(adminJs, /parseAndUploadCustomLinks/);
+  assert.match(projectJs, /linkButton\("Planos"/);
+  assert.match(projectJs, /project\.customLinks/);
+  assert.match(writer, /normalizeCustomLinks/);
 });
 
 test("banner e cabeçalho possuem adaptação para telas menores", async () => {

@@ -88,6 +88,21 @@ const normalizeGallery = (value, slug) => {
   });
 };
 
+const normalizeCustomLinks = (value, slug) => {
+  if (value == null) return [];
+  if (!Array.isArray(value)) fail("Botões personalizados precisa ser uma lista.");
+  if (value.length > 12) fail("Botões personalizados aceita no máximo 12 itens.");
+  return value.map((item, index) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) fail(`Botão ${index + 1} é inválido.`);
+    return {
+      label: text(item.label, `Texto do botão ${index + 1}`, 80, { required: true }),
+      url: httpsUrl(item.url, `Link do botão ${index + 1}`, 1000),
+      iconUrl: httpsUrl(item.iconUrl, `Ícone do botão ${index + 1}`, 2000),
+      iconPath: mediaPath(item.iconPath, slug, "link-icons", `Caminho do ícone ${index + 1}`)
+    };
+  });
+};
+
 const normalizeStudioProject = (slugValue, value) => {
   const slug = text(slugValue, "Slug", 80, { required: true });
   if (!PROJECT_SLUG.test(slug)) fail("Use um slug com letras minúsculas, números e hífens.");
@@ -122,6 +137,8 @@ const normalizeStudioProject = (slugValue, value) => {
     downloadUrl: downloads[0]?.url || "",
     supportUrl: httpsUrl(value.supportUrl, "Link de suporte", 1000),
     licenseUrl: httpsUrl(value.licenseUrl, "Link de licença", 1000),
+    plansUrl: httpsUrl(value.plansUrl, "Link de planos", 1000),
+    customLinks: normalizeCustomLinks(value.customLinks, slug),
     order,
     visible: value.visible,
     featured: value.featured,
