@@ -56,6 +56,10 @@ test("downloads aceitam múltiplas opções no CMS e sempre usam seletor públic
   assert.match(functionsJs, /exports\.projectDownload/);
   assert.match(functionsJs, /\/api\/download\?project=/);
   assert.doesNotMatch(projectJs, /option\.target\s*=\s*"_blank"/);
+  assert.match(functionsJs, /DOWNLOAD_CHUNK_BYTES/);
+  assert.match(functionsJs, /request\.query\.chunk/);
+  assert.match(projectJs, /downloadInChunks/);
+  assert.match(projectJs, /content-range/);
 });
 
 test("planos e botões personalizados são opcionais e administráveis", async () => {

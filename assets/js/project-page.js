@@ -33,6 +33,45 @@ const linkButton = (label, url, primary = false) => {
 };
 const showSection = (id, show) => { byId(id).hidden = !show; };
 
+const downloadInChunks = async (url, label, statusNode) => {
+  const parts = [];
+  let offset = 0;
+  let total = null;
+  let contentType = "application/octet-stream";
+  let fileName = String(label || "download").trim() || "download";
+  do {
+    const separator = url.includes("?") ? "&" : "?";
+    const response = await fetch(`${url}${separator}chunk=${offset}`, { cache: "no-store" });
+    if (!response.ok) throw new Error("Não foi possível preparar o arquivo para download.");
+    const range = response.headers.get("content-range") || "";
+    const rangeMatch = range.match(/bytes\s+(\d+)-(\d+)\/(\d+)/i);
+    const disposition = response.headers.get("content-disposition") || "";
+    const nameMatch = disposition.match(/filename="([^"]+)"/i);
+    if (nameMatch?.[1]) fileName = nameMatch[1];
+    contentType = response.headers.get("content-type") || contentType;
+    const part = await response.blob();
+    if (!part.size) throw new Error("O servidor retornou uma parte vazia do arquivo.");
+    parts.push(part);
+    if (rangeMatch) {
+      offset = Number(rangeMatch[2]) + 1;
+      total = Number(rangeMatch[3]);
+    } else {
+      offset += part.size;
+      total = offset;
+    }
+    statusNode.textContent = total ? `Preparando ${Math.min(100, Math.round(offset * 100 / total))}%` : "Preparando download…";
+  } while (total !== null && offset < total);
+
+  const objectUrl = URL.createObjectURL(new Blob(parts, { type: contentType }));
+  const anchor = document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.download = fileName;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+};
+
 const getDownloads = (project) => {
   const softwareProject = (project.categories || []).some((category) => category === "Programa" || category === "Aplicativo");
   if (!softwareProject) return [];
@@ -61,7 +100,17 @@ const openDownloadDialog = (project, downloads, trigger) => {
     const option = node("a", "download-option", download.label);
     option.href = download.url;
     option.setAttribute("aria-label", `Baixar ${download.label}`);
-    option.addEventListener("click", () => closeDownloadDialog());
+    option.addEventListener("click", async (event) => {
+      event.preventDefault();
+      downloadDialogOptions.querySelectorAll("a").forEach((item) => item.setAttribute("aria-disabled", "true"));
+      try {
+        await downloadInChunks(download.url, download.label, option);
+        closeDownloadDialog();
+      } catch (error) {
+        option.textContent = error?.message || "Falha ao preparar o download. Tente novamente.";
+        downloadDialogOptions.querySelectorAll("a").forEach((item) => item.removeAttribute("aria-disabled"));
+      }
+    });
     downloadDialogOptions.append(option);
   });
   if (typeof downloadDialog.showModal === "function") downloadDialog.showModal();

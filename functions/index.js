@@ -114,6 +114,7 @@ exports.publicProjects = onRequest(
 const safeDownloadName = (value) => String(value || "download")
   .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 160) || "download";
+const DOWNLOAD_CHUNK_BYTES = 8 * 1024 * 1024;
 
 exports.projectDownload = onRequest(
   { region: "southamerica-east1", cors: false, invoker: "public", timeoutSeconds: 540, memory: "512MiB" },
@@ -139,10 +140,26 @@ exports.projectDownload = onRequest(
         response.status(400).send("Origem de download inválida."); return;
       }
       const headers = { "User-Agent": "GuiaSys-Studio-Download/1.0", Accept: "*/*" };
-      if (request.headers.range) headers.Range = request.headers.range;
+      const chunkValue = request.query.chunk;
+      if (request.method === "GET" && chunkValue === undefined && !request.headers.range) {
+        response.status(400).send("Inicie o download pela página do projeto."); return;
+      }
+      if (chunkValue !== undefined) {
+        const chunkStart = Number(chunkValue);
+        if (!Number.isSafeInteger(chunkStart) || chunkStart < 0) {
+          response.status(400).send("Parte de download inválida."); return;
+        }
+        headers.Range = `bytes=${chunkStart}-${chunkStart + DOWNLOAD_CHUNK_BYTES - 1}`;
+      } else if (request.headers.range) headers.Range = request.headers.range;
       const upstream = await fetch(upstreamUrl, { method: request.method, headers, redirect: "follow" });
       if (!upstream.ok && upstream.status !== 206) {
         response.status(502).send("Arquivo temporariamente indisponível."); return;
+      }
+      if (chunkValue !== undefined && upstream.status !== 206) {
+        const length = Number(upstream.headers.get("content-length"));
+        if (!Number.isFinite(length) || length > DOWNLOAD_CHUNK_BYTES || Number(chunkValue) > 0) {
+          response.status(502).send("A origem não oferece download parcial."); return;
+        }
       }
       const fileName = safeDownloadName(upstreamUrl.pathname.split("/").pop() || download.label);
       response.status(upstream.status);
