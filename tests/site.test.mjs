@@ -77,6 +77,18 @@ test("planos e botões personalizados são opcionais e administráveis", async (
   assert.match(writer, /normalizeCustomLinks/);
 });
 
+test("seletores de imagem do CMS permanecem visíveis e clicáveis", async () => {
+  const [html, css] = await Promise.all([
+    readFile(new URL("../admin/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../assets/css/style.css", import.meta.url), "utf8")
+  ]);
+  for (const id of ["project-logo-file", "project-banner-file", "project-gallery-files"]) {
+    assert.match(html, new RegExp(`id="${id}"[^>]*type="file"`));
+    assert.doesNotMatch(html, new RegExp(`id="${id}"[^>]*disabled`));
+  }
+  assert.match(css, /input\[type="file"\]::file-selector-button/);
+});
+
 test("banner e cabeçalho possuem adaptação para telas menores", async () => {
   const css = await readFile(new URL("../assets/css/style.css", import.meta.url), "utf8");
   assert.match(css, /\.dynamic-project-hero\{[^}]*background-size:contain/);
