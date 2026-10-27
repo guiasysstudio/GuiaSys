@@ -42,6 +42,26 @@ test("aceita projeto novo com todos os campos opcionais vazios", () => {
   assert.equal(project.downloadUrl, "");
 });
 
+test("preenche campos opcionais ausentes com valores seguros", () => {
+  const project = normalizeStudioProject("projeto-sem-opcionais", {
+    name: "Projeto sem opcionais",
+    categories: ["Site"],
+    order: 0,
+    visible: false,
+    featured: false
+  });
+
+  assert.deepEqual(project.platforms, []);
+  assert.deepEqual(project.requirements, []);
+  assert.deepEqual(project.features, []);
+  assert.deepEqual(project.faq, []);
+  assert.deepEqual(project.downloads, []);
+  assert.deepEqual(project.customLinks, []);
+  assert.deepEqual(project.gallery, []);
+  assert.equal(project.shortDescription, "");
+  assert.equal(project.plansUrl, "");
+});
+
 test("preserva todos os campos preenchidos de projeto existente", () => {
   const project = normalizeStudioProject("guia-play", minimal({
     name: "Guia Play",
@@ -99,4 +119,6 @@ test("retorna mensagens específicas para dados inválidos", () => {
     categories: ["Programa"],
     downloads: [{ label: "Windows", url: "http://example.com/app.exe" }]
   })), /https:\/\//);
+  assert.throws(() => normalizeStudioProject("projeto", minimal({ features: undefined, gallery: {} })), /Galeria precisa ser uma lista/);
+  assert.throws(() => normalizeStudioProject("projeto", { name: "Sem opções", categories: ["Site"] }), /opções de publicação/);
 });

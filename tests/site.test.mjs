@@ -29,6 +29,15 @@ test("o CMS não contém seed e oferece CRUD e upload", async () => {
   assert.doesNotMatch(js, /setDoc\(documentRef/);
 });
 
+test("o CMS envia somente dados serializáveis ao salvar um projeto", async () => {
+  const js = await readFile(new URL("../assets/js/admin.js", import.meta.url), "utf8");
+  const payload = js.match(/const payload = \{[\s\S]*?\r?\n    \};\r?\n\r?\n    await manageProjectWrite/)?.[0];
+
+  assert.ok(payload, "payload enviado para adminProjectWrite não encontrado");
+  assert.doesNotMatch(payload, /serverTimestamp\s*\(/);
+  assert.match(js, /await manageProjectWrite\(\{ action: "save", slug, project: payload \}\)/);
+});
+
 test("não há dependência de GitHub Pages", async () => {
   const config = JSON.parse(await readFile(new URL("../firebase.json", import.meta.url), "utf8"));
   assert.equal(config.hosting.public, ".");

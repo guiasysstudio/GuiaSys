@@ -501,8 +501,7 @@ form.addEventListener("submit", async (event) => {
       bannerPath: bannerUpload?.path || (fields.bannerRemove.checked ? "" : currentProject?.bannerPath || ""),
       gallery: [...currentGallery, ...galleryUploads].slice(0, 12),
       seoTitle: fields.seoTitle.value.trim(),
-      seoDescription: fields.seoDescription.value.trim(),
-      updatedAt: serverTimestamp()
+      seoDescription: fields.seoDescription.value.trim()
     };
 
     await manageProjectWrite({ action: "save", slug, project: payload });
